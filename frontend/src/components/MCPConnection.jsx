@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Shield, Database, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -140,7 +141,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
         </div>
       )}
 
-      <div className="connection-status">
+      {/* <div className="connection-status">
         <div className="status-indicator">
           {getStatusIcon()}
           <span className={`status-text ${getStatusColor()}`}>
@@ -150,7 +151,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
             {connectionStatus === 'error' && 'Connection Error'}
           </span>
         </div>
-      </div>
+      </div> */}
 
       {error && (
         <div className="error-banner">

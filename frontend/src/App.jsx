@@ -5,9 +5,9 @@ import MCPConnection from './components/MCPConnection';
 import ProfileAnalysis from './components/profileAnalysis';
 import ChatInterface from './components/ChatInterface';
 import ProfileDataTables from './components/ProfileDataTables'; // NEW IMPORT
-import PersonaSelector from './components/personaSelector';
+import PersonaSelector from './components/PersonaSelector'; // Corrected filename for consistency
 import { apiService } from './services/api';
-import './App.css';
+import './App.css'; // Make sure this path is correct
 
 function App() {
   const [currentStep, setCurrentStep] = useState('connection'); // 'connection', 'profile', 'tables', 'chat'
@@ -103,16 +103,18 @@ function App() {
 
   return (
     <div className="App">
-      <header className="app-header">
-        <h1>Future Me</h1>
-        <p>AI-powered financial conversations with your future self</p>
-        {mcpConnected && (
-          <div className="connection-indicator">
-            <span className="status-dot connected"></span>
-            <span>Connected to Fi MCP</span>
-          </div>
-        )}
-      </header>
+     <header className="app-header">
+  <h1>Future Me</h1>
+  {!mcpConnected && (
+    <p>AI-powered financial conversations with your future self</p>
+  )}
+  {mcpConnected && (
+    <div className="connection-indicator">
+      <span className="status-dot connected"></span>
+      <span>Connected to Fi MCP</span>
+    </div>
+  )}
+</header>
 
       <main className="app-main">
         {error && (
