@@ -1,6 +1,6 @@
 // frontend/src/components/ProfileAnalysis.jsx
 // Component for uploading and analyzing Fi MCP data
-import { Handle } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
 import React, { useState, useRef } from "react";
 
 const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
@@ -80,7 +80,7 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
                 <span className="preview-label">Employer</span>
                 <span className="preview-value">{previewInfo.employer}</span>
               </div>
-              <Handle type="target" position="top" />
+              <Handle type="source" position={Position.Bottom} />{" "}
             </div>
           )}
           {/* <div className="preview-actions">
