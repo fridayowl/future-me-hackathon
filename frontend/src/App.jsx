@@ -1,7 +1,7 @@
-// frontend/src/App.jsx
-// Main React application for Future Me frontend
+/* eslint-disable no-unused-vars */
 
 import React, { useState } from 'react';
+import MCPConnection from './components/MCPConnection';
 import ProfileAnalysis from './components/profileAnalysis';
 import ChatInterface from './components/ChatInterface';
 import PersonaSelector from './components/personaSelector';
@@ -9,13 +9,26 @@ import { apiService } from './services/api';
 import './App.css';
 
 function App() {
-  const [currentStep, setCurrentStep] = useState('profile'); // 'profile', 'chat'
+  const [currentStep, setCurrentStep] = useState('connection'); // 'connection', 'profile', 'chat'
   const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [mcpConnected, setMcpConnected] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [mcpSessionId, setMcpSessionId] = useState(null);
   const [selectedPersona, setSelectedPersona] = useState({ age: 40, characteristics: null });
 
-  // Load sample data for demo
+  // Handle MCP connection status changes
+  const handleConnectionChange = (connected, sessionId) => {
+    setMcpConnected(connected);
+    setMcpSessionId(sessionId);
+    if (!connected) {
+      setCurrentStep('connection');
+      setUserProfile(null);
+    }
+  };
+
+  // Load sample data for demo (fallback option)
   const loadSampleData = async () => {
     try {
       setIsLoading(true);
@@ -34,13 +47,32 @@ function App() {
     }
   };
 
-  // Analyze uploaded Fi MCP data
-  const analyzeProfile = async (fiMCPData) => {
+  // FIXED: Handle both raw data and already-analyzed profiles
+  const analyzeProfile = async (profileData) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const profileAnalysis = await apiService.analyzeProfile(fiMCPData);
+      // Check if the data is already analyzed (has basicInfo, behaviorAnalysis, etc.)
+      if (profileData.basicInfo || profileData.demographics || profileData.financialSummary) {
+        console.log('Received already-analyzed profile data');
+        setUserProfile(profileData);
+        setCurrentStep('chat');
+        return;
+      }
+
+      // If it's raw Fi MCP data, analyze it
+      if (profileData.dataItems) {
+        console.log('Analyzing raw Fi MCP data');
+        const profileAnalysis = await apiService.analyzeProfile(profileData);
+        setUserProfile(profileAnalysis.profile);
+        setCurrentStep('chat');
+        return;
+      }
+
+      // If it's some other format, try to analyze it anyway
+      console.log('Attempting to analyze unknown data format');
+      const profileAnalysis = await apiService.analyzeProfile(profileData);
       setUserProfile(profileAnalysis.profile);
       setCurrentStep('chat');
       
@@ -51,6 +83,12 @@ function App() {
     }
   };
 
+  const resetToConnection = () => {
+    setCurrentStep('connection');
+    setUserProfile(null);
+    setError(null);
+  };
+
   const resetToProfile = () => {
     setCurrentStep('profile');
     setUserProfile(null);
@@ -58,101 +96,85 @@ function App() {
   };
 
   return (
-    <div className="app">
-      {/* Header */}
+    <div className="App">
       <header className="app-header">
-        <div className="header-content">
-          <h1 className="app-title">
-            <span className="gradient-text">Future Me</span>
-          </h1>
-          <p className="app-subtitle">
-            Your AI-powered temporal financial advisor
-          </p>
-          
-          {userProfile && (
-            <button 
-              onClick={resetToProfile}
-              className="reset-button"
-            >
-              New Analysis
-            </button>
-          )}
-        </div>
+        <h1>Future Me</h1>
+        <p>AI-powered financial conversations with your future self</p>
+        {mcpConnected && (
+          <div className="connection-indicator">
+            <span className="status-dot connected"></span>
+            <span>Connected to Fi MCP</span>
+          </div>
+        )}
       </header>
 
-      {/* Main Content */}
       <main className="app-main">
         {error && (
           <div className="error-banner">
-            <p>{error}</p>
-            <button onClick={() => setError(null)}>Dismiss</button>
+            <span>{error}</span>
+            <button onClick={() => setError(null)}>×</button>
           </div>
         )}
 
-        {isLoading && (
-          <div className="loading-overlay">
-            <div className="loading-spinner"></div>
-            <p>Analyzing your financial future...</p>
-          </div>
+        {currentStep === 'connection' && (
+          <MCPConnection
+            onAnalyzeProfile={analyzeProfile}
+            onConnectionChange={handleConnectionChange}
+            isLoading={isLoading}
+          />
         )}
 
         {currentStep === 'profile' && (
-          <div className="step-container">
-            <ProfileAnalysis 
-              onAnalyzeProfile={analyzeProfile}
-              onLoadSample={loadSampleData}
-              isLoading={isLoading}
-            />
-          </div>
+          <ProfileAnalysis
+            onAnalyzeProfile={analyzeProfile}
+            onLoadSample={loadSampleData}
+            isLoading={isLoading}
+          />
         )}
 
         {currentStep === 'chat' && userProfile && (
-          <div className="step-container chat-container">
-            {/* Profile Summary */}
-            <div className="profile-summary">
-              <h2>Your Financial Profile</h2>
-              <div className="profile-stats">
-                <div className="stat">
-                  <span className="stat-label">Age</span>
-                  <span className="stat-value">{userProfile.demographics?.estimatedAge || 'Unknown'}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Credit Score</span>
-                  <span className="stat-value">{userProfile.financialSummary?.creditScore || 'N/A'}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Net Worth</span>
-                  <span className="stat-value">₹{userProfile.financialSummary?.netWorth?.toLocaleString() || '0'}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Total Debt</span>
-                  <span className="stat-value">₹{userProfile.financialSummary?.totalDebt?.toLocaleString() || '0'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Persona Selector */}
-            <PersonaSelector 
-              currentAge={userProfile.demographics?.estimatedAge || 26}
-              selectedAge={selectedPersona.age}
-              onAgeSelect={(age) => setSelectedPersona({ age, characteristics: null })}
-              userProfile={userProfile}
-            />
-
-            {/* Chat Interface */}
-            <ChatInterface 
-              userProfile={userProfile}
-              selectedPersona={selectedPersona}
-              onPersonaUpdate={setSelectedPersona}
-            />
-          </div>
+          <ChatInterface
+            userProfile={userProfile}
+            onReset={resetToConnection}
+            selectedPersona={selectedPersona}
+            setSelectedPersona={setSelectedPersona}
+          />
         )}
+
+        {/* Navigation */}
+        <div className="app-navigation">
+          {currentStep !== 'connection' && (
+            <button
+              className="nav-button"
+              onClick={resetToConnection}
+              disabled={isLoading}
+            >
+              ← Back to Connection
+            </button>
+          )}
+          
+          {mcpConnected && currentStep === 'connection' && (
+            <button
+              className="nav-button secondary"
+              onClick={() => setCurrentStep('profile')}
+              disabled={isLoading}
+            >
+              Use File Upload Instead
+            </button>
+          )}
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="app-footer">
-        <p>Built for Google Cloud Agentic AI Day Hackathon | Team Shogun</p>
-      </footer>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p>
+            {currentStep === 'connection' ? 'Connecting to Fi MCP...' :
+             currentStep === 'profile' ? 'Analyzing your financial profile...' :
+             'Processing...'}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
