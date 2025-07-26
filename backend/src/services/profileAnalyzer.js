@@ -1,3 +1,4 @@
+
 // src/services/profileAnalyzer.js
 // Human Profile Analyzer using Google Gemini AI
 
@@ -39,7 +40,12 @@ class ProfileAnalyzer {
       };
 
       // Generate future stages based on the complete profile, incorporating new details
-      const futureStages = await this.generateFutureStages(partialProfile);
+      let futureStages = await this.generateFutureStages(partialProfile);
+
+      // NEW: Calculate and add acquisition chances to each future stage
+      // Pass basicInfo to this function for initial asset status verification and deterministic calculation
+      futureStages = this.addAcquisitionChances(futureStages, basicProfile.creditProfile);
+
 
       // Create complete profile
       const completeProfile = {
@@ -97,6 +103,7 @@ class ProfileAnalyzer {
     const hasCarLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Auto Loan");
     const hasBikeLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Two-Wheeler Loan");
     const hasHomeLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Home Loan");
+
 
     return {
       demographics: {
@@ -161,10 +168,8 @@ class ProfileAnalyzer {
    * Now outputs a JSON object based on a defined schema.
    */
   async generateHumanDescription(basicProfile) {
-    const prompt = `
-    Analyze this person's financial profile and create a detailed human description.
-    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \`\`\`json).**
-
+    const prompt = `Analyze this person's financial profile and create a detailed human description.
+    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \\\json).**
     The JSON output must strictly adhere to the following schema:
     {
       "name": "string",
@@ -240,7 +245,6 @@ class ProfileAnalyzer {
     For "lifeStage", categorize them based on age and financial situation (e.g., "Early Career Professional", "Mid-Career with Growing Family", "Pre-Retirement"). Use the getLifeStage helper function for this.
     Provide a concise "summary" of the profile.
     `;
-
     const result = await this.model.generateContent(prompt, {
       responseMimeType: 'application/json' // Crucial for JSON output
     });
@@ -253,10 +257,8 @@ class ProfileAnalyzer {
    * Now outputs a JSON object.
    */
   async analyzeBehaviorPatterns(basicProfile) {
-    const prompt = `
-    Analyze the financial behavior patterns of this person.
-    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \`\`\`json).**
-
+    const prompt = `Analyze the financial behavior patterns of this person.
+    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \\\json).**
     The JSON output must strictly adhere to the following schema:
     {
       "creditManagementStyle": "string",
@@ -285,7 +287,6 @@ class ProfileAnalyzer {
 
     Provide specific, analytical insights for each field.
     `;
-
     const result = await this.model.generateContent(prompt, {
       responseMimeType: 'application/json'
     });
@@ -298,10 +299,8 @@ class ProfileAnalyzer {
    * Now outputs a JSON object.
    */
   async generateRiskAssessment(basicProfile) {
-    const prompt = `
-    Provide a comprehensive financial risk assessment for this individual.
-    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \`\`\`json).**
-
+    const prompt = `Provide a comprehensive financial risk assessment for this individual.
+    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \\\json).**
     The JSON output must strictly adhere to the following schema:
     {
       "financialHealthScore": {
@@ -334,7 +333,6 @@ class ProfileAnalyzer {
 
     Analyze and provide specific, actionable insights for each field. For "redFlags", list any critical warning signs. For arrays, list distinct points.
     `;
-
     const result = await this.model.generateContent(prompt, {
       responseMimeType: 'application/json'
     });
@@ -342,222 +340,394 @@ class ProfileAnalyzer {
     return this.safeParseGeminiJson(response.text());
   }
 
- /**
- * Enhanced generateFutureStages method with realistic financial projections
- * This replaces the existing method in ProfileAnalyzer class
- */
-async generateFutureStages(completeProfile) {
-  const { basicInfo, humanDescription, behaviorAnalysis, riskAssessment } = completeProfile;
+  /**
+   * Generate next three future stages of the person based on their current profile.
+   * This now acts as the "Future Me Versions" generator.
+   * @param {Object} completeProfile - The already analyzed complete profile.
+   * @returns {Array<Object>} An array of objects, each describing a future stage.
+   */
+  async generateFutureStages(completeProfile) {
+    const { basicInfo } = completeProfile; // Destructure basicInfo for easier access
 
-  // Current financial snapshot
-  const currentNetWorth = basicInfo.financialSummary.netWorth;
-  const currentDebt = basicInfo.financialSummary.totalDebt;
-  const currentAge = basicInfo.demographics.estimatedAge;
-  const currentCreditScore = basicInfo.financialSummary.creditScore;
-  const currentSavings = basicInfo.financialSummary.liquidSavings;
-  
-  // Estimate current income based on EPF contributions and industry standards
-  const estimatedCurrentIncome = this.estimateCurrentIncome(basicInfo);
-  
-  const currentDate = "Friday, July 26, 2025";
-  const currentLocation = "Kochi, Kerala, India";
+    // Current financial snapshot
+    const currentNetWorth = basicInfo.financialSummary.netWorth;
+    const currentDebt = basicInfo.financialSummary.totalDebt;
+    const currentAge = basicInfo.demographics.estimatedAge;
+    const currentCreditScore = basicInfo.financialSummary.creditScore;
+    const currentSavings = basicInfo.financialSummary.liquidSavings;
 
-  const prompt = `
-  You are a financial analyst creating realistic future projections for an individual. 
-  Based on their CURRENT DIRE financial situation, create THREE progressive future stages with REALISTIC and SPECIFIC financial numbers.
+    // Estimate current income based on EPF contributions and industry standards
+    const estimatedCurrentIncome = this.estimateCurrentIncome(basicInfo);
 
-  **CRITICAL CONTEXT - CURRENT FINANCIAL REALITY:**
-  - Net Worth: ₹${currentNetWorth.toLocaleString()} (EXTREMELY LOW - almost broke)
-  - Total Debt: ₹${currentDebt.toLocaleString()} (16x higher than net worth!)
-  - Debt-to-Savings Ratio: ${basicInfo.financialSummary.debtToSavingsRatio} (CRITICAL)
-  - Credit Score: ${currentCreditScore} (Good, but debt is crushing)
-  - Age: ${currentAge} years
-  - Estimated Monthly Income: ₹${Math.round(estimatedCurrentIncome/12).toLocaleString()}
-  - Credit Card Utilization: 72% on Federal Bank (DANGEROUS)
+    const currentDate = "Friday, July 26, 2025"; // Current date placeholder
+    const currentLocation = "Kochi, Kerala, India"; // Current location placeholder
 
-  **GENERATE ONLY JSON - NO MARKDOWN:**
-  
-  Create realistic projections considering:
-  1. With ₹3,148 net worth and ₹50,077 debt, how can they realistically grow?
-  2. What specific income growth is needed to service debt AND build wealth?
-  3. How long will debt payoff actually take with realistic savings rates?
-  4. What are the mathematical possibilities given current financial constraints?
+    // Removed specific assetProjectionInstructions. Gemini will focus on general asset status/notes.
+    // Our new `addAcquisitionChances` method will set the precise percentages and potentially adjust status/notes.
 
-  Schema (JSON Array of 3 objects):
-  [
-    {
-      "versionName": "string",
-      "estimatedAgeRange": "string",
-      "timeframeYearsFromCurrent": "string", 
-      "estimatedYearRange": "string",
-      "keyLifeEvents": ["array of specific life events"],
-      "locationContext": {
-        "likelyCityOrRegion": "string",
-        "housingSituation": "string",
-        "estimatedMonthlyRentMortgage": "number"
-      },
-      "careerFinancials": {
-        "estimatedMonthlyIncome": "number",
-        "incomeGrowthFromCurrent": "string",
-        "jobStability": "string"
-      },
-      "detailedFinancialProjection": {
-        "projectedNetWorth": "number",
-        "projectedTotalDebt": "number", 
-        "projectedCreditScore": "number",
-        "projectedMonthlySavings": "number",
-        "projectedInvestments": "number",
-        "debtToIncomeRatio": "string",
-        "emergencyFundMonths": "number",
-        "majorAssets": ["array"],
-        "majorLiabilities": ["array with amounts"]
-      },
-      "realisticMilestones": {
-        "debtFreeTarget": "string",
-        "firstMajorPurchase": "string", 
-        "creditScoreGoal": "number",
-        "savingsTarget": "number"
-      },
-      "financialStressLevel": "string",
-      "keyFinancialChallenges": ["array"],
-      "practicalStrategies": ["array"],
-      "summary": "string"
+    const prompt = `You are a financial analyst creating realistic future projections for an individual.
+    Based on their CURRENT DIRE financial situation, create THREE progressive future stages with REALISTIC and SPECIFIC financial numbers.
+
+    **CRITICAL CONTEXT - CURRENT FINANCIAL REALITY:**
+    - Net Worth: ₹${currentNetWorth.toLocaleString()} (EXTREMELY LOW - almost broke)
+    - Total Debt: ₹${currentDebt.toLocaleString()} (16x higher than net worth!)
+    - Debt-to-Savings Ratio: ${basicInfo.financialSummary.debtToSavingsRatio} (CRITICAL)
+    - Credit Score: ${currentCreditScore} (Good, but debt is crushing)
+    - Age: ${currentAge} years
+    - Estimated Monthly Income: ₹${Math.round(estimatedCurrentIncome/12).toLocaleString()}
+    - Credit Card Utilization (Federal Bank): ${basicInfo.creditProfile.creditCards.find(c => c.bank === 'Federal Bank')?.utilization || 'N/A'}% (DANGEROUS if high)
+    - Current Home Loan: ${basicInfo.creditProfile.hasHomeLoan ? 'Yes' : 'No'}
+    - Current Car Loan: ${basicInfo.creditProfile.hasCarLoan ? 'Yes' : 'No'}
+    - Current Bike Loan: ${basicInfo.creditProfile.hasBikeLoan ? 'Yes' : 'No'}
+
+    **GENERATE ONLY JSON - NO MARKDOWN:**
+
+    Create realistic projections considering:
+    1. With ₹3,148 net worth and ₹50,077 debt, how can they realistically grow?
+    2. What specific income growth is needed to service debt AND build wealth?
+    3. How long will debt payoff actually take with realistic savings rates?
+    4. What are the mathematical possibilities given current financial constraints?
+    5. **For each stage, provide a realistic "ownershipStatus" (e.g., "None", "Renting", "Likely Acquisition", "Owned (loan)", "Owned (paid off)") and descriptive "notes" for car, bike, and home.** Consider the current asset ownership and financial progression.
+
+    Schema (JSON Array of 3 objects):
+    [
+      {
+        "versionName": "string",
+        "estimatedAgeRange": "string",
+        "timeframeYearsFromCurrent": "string",
+        "estimatedYearRange": "string",
+        "keyLifeEvents": ["array of specific life events"],
+        "locationContext": {
+          "likelyCityOrRegion": "string",
+          "housingSituation": "string", // e.g., "renting apartment", "owning first home", "owning larger home"
+          "estimatedMonthlyRentMortgage": "number" // Qualitative, e.g., "Moderate", "High", "Paid off"
+        },
+        "careerFinancials": {
+          "estimatedMonthlyIncome": "number",
+          "incomeGrowthFromCurrent": "string",
+          "jobStability": "string"
+        },
+        "detailedFinancialProjection": {
+          "projectedNetWorth": "number",
+          "projectedTotalDebt": "number",
+          "projectedCreditScore": "number",
+          "projectedMonthlySavings": "number",
+          "projectedInvestments": "number",
+          "debtToIncomeRatio": "string",
+          "emergencyFundMonths": "number",
+          "majorAssets": ["array"],
+          "majorLiabilities": ["array with amounts"]
+        },
+        "assetOwnershipProjection": {
+          "car": {
+            "ownershipStatus": "string", // "None", "Owned (paid off)", "Owned (loan)", "Likely Acquisition", "Upgrade Planned"
+            "notes": "string" // e.g., "Expected to purchase a mid-range sedan after debt clearance."
+            // 'chanceOfAcquisition' will be added by the backend code
+          },
+          "bike": {
+            "ownershipStatus": "string", // "None", "Owned (paid off)", "Owned (loan)", "Likely Acquisition"
+            "notes": "string" // e.g., "Likely to retain existing bike."
+            // 'chanceOfAcquisition' will be added by the backend code
+          },
+          "home": {
+            "ownershipStatus": "string", // "Renting", "Owned (loan)", "Owned (paid off)", "Second Home Acquisition"
+            "notes": "string" // e.g., "Primary residence fully owned, considering investment property."
+            // 'chanceOfAcquisition' will be added by the backend code
+          }
+        },
+        "realisticMilestones": {
+          "debtFreeTarget": "string",
+          "firstMajorPurchase": "string",
+          "creditScoreGoal": "number",
+          "savingsTarget": "number"
+        },
+        "financialStressLevel": "string",
+        "keyFinancialChallenges": ["array"],
+        "practicalStrategies": ["array"],
+        "summary": "string" // A concise overview of this future version
+      }
+    ]
+
+    **REALISTIC CONSTRAINTS TO FOLLOW:**
+    - Someone with ₹3K net worth CANNOT have ₹50L net worth in 5-7 years without extraordinary circumstances
+    - Debt payoff with current income will take 2-4 years minimum
+    - Income growth in India: 8-15% annually for good performers
+    - Savings rate: Start at 10-15%, grow to 25-30% over time
+    - Credit score can improve to 800+ if debt is managed well
+    - Home purchase realistic only after debt clearance + 20% down payment saved
+
+    **MATHEMATICAL APPROACH:**
+    Stage 1 (2-4 years): Focus on DEBT ELIMINATION
+    - Project debt reduction timeline with realistic EMI payments
+    - Calculate achievable net worth after debt clearance
+    - Factor in modest income growth (10-12% annually)
+
+    Stage 2 (5-8 years): FOUNDATION BUILDING
+    - Post-debt financial freedom calculations
+    - First home purchase feasibility analysis (if not already owned)
+    - Investment portfolio starting amounts
+
+    Stage 3 (10-15 years): WEALTH ACCUMULATION
+    - Compound growth projections based on Stage 2 foundations
+    - Realistic property appreciation and investment returns
+    - Factor in family expenses, inflation, economic cycles
+
+    Current Financial Context:
+    - Location: ${currentLocation}
+    - Employer: ${basicInfo.demographics.employer}
+    - Work Experience: ${basicInfo.demographics.workExperience} years
+    - Current Credit Cards: ${basicInfo.creditProfile.creditCards.map(c => `${c.bank} (${c.utilization}%)`).join(', ') || 'N/A'}
+    - Current Loans: ${basicInfo.creditProfile.loans.map(l => `${l.bank} (${this.getLoanType(l.accountType)})`).join(', ') || 'N/A'}
+    - Monthly Debt Service Estimate: ₹${Math.round(currentDebt * 0.025).toLocaleString()} (assuming 30% APR average)
+
+    Make each projection mathematically sound and achievable given the harsh current reality.
+    `;
+    const result = await this.model.generateContent(prompt, {
+      responseMimeType: 'application/json'
+    });
+    const response = await result.response;
+    return this.safeParseGeminiJson(response.text());
+  }
+
+  /**
+   * NEW METHOD: Calculates and adds acquisition chances to each future stage's assets.
+   * This method now also *corrects* or sets the ownershipStatus and notes based on initial data
+   * and financial projections, overriding Gemini's potentially illogical outputs.
+   * @param {Array<Object>} futureStages - Array of future stage objects from Gemini.
+   * @param {Object} currentCreditProfile - The initial creditProfile from basicInfo.
+   * @returns {Array<Object>} Updated future stages with acquisition chances.
+   */
+  addAcquisitionChances(futureStages, currentCreditProfile) {
+    return futureStages.map(stage => {
+      const projectedNetWorth = stage.detailedFinancialProjection.projectedNetWorth;
+      const projectedMonthlyIncome = stage.careerFinancials.estimatedMonthlyIncome;
+      const projectedTotalDebt = stage.detailedFinancialProjection.projectedTotalDebt;
+      const emergencyFundMonths = stage.detailedFinancialProjection.emergencyFundMonths;
+      const timeframeYears = parseFloat(stage.timeframeYearsFromCurrent.split('-')[0]) || 0; // Get lower bound of timeframe
+
+      // --- Car Acquisition Logic ---
+      if (currentCreditProfile.hasCarLoan) {
+        // If they currently have a car loan, it means they own a car
+        stage.assetOwnershipProjection.car.ownershipStatus = "Owned (loan)";
+        stage.assetOwnershipProjection.car.chanceOfAcquisition = 100;
+        stage.assetOwnershipProjection.car.notes = "Currently owns a car. Focus on paying off the loan or considering an upgrade.";
+        // More sophisticated logic: If projected total debt (excluding home loan if applicable) is near zero
+        if (projectedTotalDebt <= (projectedMonthlyIncome * 0.5) && projectedNetWorth > 0 && timeframeYears >= 2) { // Example: assume small remaining debt is fine
+             stage.assetOwnershipProjection.car.ownershipStatus = "Owned (paid off)";
+             stage.assetOwnershipProjection.car.notes = "Existing car loan paid off. Potential for upgrade to a newer model.";
+        }
+      } else {
+        // If they don't have a car loan currently
+        let chance = 0;
+        let notes = "Car acquisition highly unlikely due to current financial situation and debt focus.";
+
+        if (projectedTotalDebt <= 0) { // Must be debt-free or near debt-free
+          if (projectedNetWorth >= 250000 && projectedMonthlyIncome >= 40000 && timeframeYears >= 3) {
+            chance = 75; // Good financial standing, good chance for a budget-to-mid-range car
+            notes = "Strong financial standing after debt elimination. High chance of acquiring a budget-to-mid-range car (e.g., ₹6-10 Lakhs).";
+          } else if (projectedNetWorth >= 120000 && projectedMonthlyIncome >= 30000 && timeframeYears >= 2) {
+            chance = 45; // Some savings, moderate income, possible for a very basic/used car
+            notes = "Moderate financial position. Possible to acquire a very basic or used car on EMI (e.g., ₹3-5 Lakhs).";
+          }
+        }
+        stage.assetOwnershipProjection.car.ownershipStatus = chance >= 40 ? "Likely Acquisition" : "None"; // Set status based on calculated chance
+        stage.assetOwnershipProjection.car.notes = notes;
+        stage.assetOwnershipProjection.car.chanceOfAcquisition = chance;
+      }
+
+      // --- Bike Acquisition Logic ---
+      if (currentCreditProfile.hasBikeLoan) {
+        // If they currently have a bike loan, they own a bike
+        stage.assetOwnershipProjection.bike.ownershipStatus = "Owned (loan)";
+        stage.assetOwnershipProjection.bike.chanceOfAcquisition = 100;
+        stage.assetOwnershipProjection.bike.notes = "Currently owns a bike. Focus on paying off the loan or considering an upgrade.";
+         if (projectedTotalDebt <= (projectedMonthlyIncome * 0.2) && projectedNetWorth > 0 && timeframeYears >= 1) { // Small remaining debt ok
+             stage.assetOwnershipProjection.bike.ownershipStatus = "Owned (paid off)";
+             stage.assetOwnershipProjection.bike.notes = "Existing bike loan paid off. May retain or upgrade to a higher-end model.";
+        }
+      } else {
+        // If they don't have a bike loan currently
+        let chance = 0;
+        let notes = "Bike acquisition unlikely given current debt focus.";
+
+        if (projectedTotalDebt <= 0) { // Must be debt-free or near debt-free
+          if (projectedNetWorth >= 60000 && projectedMonthlyIncome >= 25000 && timeframeYears >= 1) {
+            chance = 90; // Very high chance for a new bike
+            notes = "Strong financial standing after debt elimination. Very high chance of acquiring a new bike (e.g., ₹90,000 - ₹1.8 Lakhs).";
+          } else if (projectedNetWorth >= 25000 && projectedMonthlyIncome >= 18000 && timeframeYears >= 0.5) {
+            chance = 70; // Good chance for a reliable used bike
+            notes = "Good financial position. Likely to acquire a reliable used bike.";
+          }
+        }
+        stage.assetOwnershipProjection.bike.ownershipStatus = chance >= 60 ? "Likely Acquisition" : "None";
+        stage.assetOwnershipProjection.bike.notes = notes;
+        stage.assetOwnershipProjection.bike.chanceOfAcquisition = chance;
+      }
+
+      // --- Home Acquisition Logic ---
+      if (currentCreditProfile.hasHomeLoan) {
+        // If they currently have a home loan, they own a home
+        stage.assetOwnershipProjection.home.ownershipStatus = "Owned (loan)";
+        stage.assetOwnershipProjection.home.chanceOfAcquisition = 100;
+        stage.assetOwnershipProjection.home.notes = "Currently owns a home with a mortgage. Focus on paying off the loan.";
+         if (projectedTotalDebt <= 0 && projectedNetWorth >= 5000000 && timeframeYears >= 10) { // Significant net worth implies equity
+             stage.assetOwnershipProjection.home.ownershipStatus = "Owned (paid off)";
+             stage.assetOwnershipProjection.home.notes = "Existing home loan fully paid off.";
+        }
+      } else {
+        // If they don't have a home loan currently
+        let chance = 0;
+        let notes = "Homeownership is a significant long-term goal, highly unlikely in early stages without substantial financial improvement.";
+
+        if (projectedTotalDebt <= 0 && emergencyFundMonths >= 6) { // Must be debt-free and have emergency fund
+          if (projectedNetWorth >= 2000000 && projectedMonthlyIncome >= 70000 && timeframeYears >= 7) {
+            chance = 85; // Excellent financial position for a home
+            notes = "Excellent financial position for homeownership. Highly likely to acquire a first home with manageable mortgage.";
+          } else if (projectedNetWorth >= 1000000 && projectedMonthlyIncome >= 50000 && timeframeYears >= 5) {
+            chance = 55; // Decent chance, possibly a smaller home or longer savings period
+            notes = "Good financial progress. Decent chance to acquire a modest first home with significant downpayment saved.";
+          } else if (projectedNetWorth >= 400000 && projectedMonthlyIncome >= 35000 && timeframeYears >= 8) {
+             chance = 25; // Low chance, early saving for downpayment
+             notes = "Building savings for a downpayment. Home acquisition possible towards the later part of this stage or next, requiring consistent savings.";
+          }
+        }
+        stage.assetOwnershipProjection.home.ownershipStatus = chance >= 50 ? "Likely Acquisition" : "Renting"; // Set status based on calculated chance
+        if (chance === 0) stage.assetOwnershipProjection.home.ownershipStatus = "Renting"; // Explicitly rent if 0% chance
+        stage.assetOwnershipProjection.home.notes = notes;
+        stage.assetOwnershipProjection.home.chanceOfAcquisition = chance;
+      }
+
+      return stage;
+    });
+  }
+
+
+  /**
+   * Estimate current income based on EPF contributions and employment data
+   * @param {Object} basicInfo - Basic profile information
+   * @returns {number} Estimated annual income
+   */
+  estimateCurrentIncome(basicInfo) {
+    // EPF contribution is typically 12% of basic salary
+    // Employee + Employer contribution gives us a baseline
+    const totalEPFContribution = basicInfo.employmentProfile.employeeContribution +
+                                 basicInfo.employmentProfile.employerContribution;
+
+    // Work experience and job role estimation
+    const workExperience = basicInfo.demographics.workExperience;
+
+    // Base estimation from EPF (rough calculation)
+    // EPF is 12% of basic salary, and basic is typically 40-50% of CTC
+    let estimatedBasicSalary = (totalEPFContribution / (workExperience > 0 ? workExperience : 1)) / 0.12;
+    let estimatedCTC = estimatedBasicSalary / 0.45; // Assuming basic is 45% of CTC
+
+    // Sanity check and adjustments based on current financial situation
+    // Someone with ₹50K debt likely has income constraints
+    const minIncome = 300000; // ₹3L minimum for someone with 6+ years experience (adjust based on age/exp)
+    const maxIncome = 800000; // ₹8L reasonable maximum given debt situation (adjust based on market)
+
+    // Adjust min/max income based on work experience to be more realistic for early/mid-career
+    if (workExperience < 5) {
+      estimatedCTC = Math.max(200000, Math.min(500000, estimatedCTC)); // Lower range for less experienced
+    } else if (workExperience >= 5 && workExperience < 10) {
+      estimatedCTC = Math.max(350000, Math.min(900000, estimatedCTC));
+    } else { // 10+ years experience
+      estimatedCTC = Math.max(500000, Math.min(1500000, estimatedCTC)); // Higher range for experienced
     }
-  ]
 
-  **REALISTIC CONSTRAINTS TO FOLLOW:**
-  - Someone with ₹3K net worth CANNOT have ₹50L net worth in 5-7 years without extraordinary circumstances
-  - Debt payoff with current income will take 2-4 years minimum
-  - Income growth in India: 8-15% annually for good performers
-  - Savings rate: Start at 10-15%, grow to 25-30% over time
-  - Credit score can improve to 800+ if debt is managed well
-  - Home purchase realistic only after debt clearance + 20% down payment saved
+    // Apply the estimatedCTC range
+    estimatedCTC = Math.max(minIncome, Math.min(maxIncome, estimatedCTC));
 
-  **MATHEMATICAL APPROACH:**
-  Stage 1 (2-4 years): Focus on DEBT ELIMINATION
-  - Project debt reduction timeline with realistic EMI payments
-  - Calculate achievable net worth after debt clearance
-  - Factor in modest income growth (10-12% annually)
 
-  Stage 2 (5-8 years): FOUNDATION BUILDING  
-  - Post-debt financial freedom calculations
-  - First home purchase feasibility analysis
-  - Investment portfolio starting amounts
+    // Adjust based on debt-to-income red flags or very low net worth
+    // High debt or very low net worth usually indicates income vs lifestyle mismatch or recent financial struggles
+    if (basicInfo.financialSummary.debtToSavingsRatio !== "Infinite" && parseFloat(basicInfo.financialSummary.debtToSavingsRatio) > 5) {
+      estimatedCTC *= 0.85; // Slightly lower income than calculated if highly leveraged
+    } else if (basicInfo.financialSummary.netWorth < 10000) { // Very low net worth
+      estimatedCTC *= 0.9;
+    }
 
-  Stage 3 (10-15 years): WEALTH ACCUMULATION
-  - Compound growth projections based on Stage 2 foundations
-  - Realistic property appreciation and investment returns
-  - Factor in family expenses, inflation, economic cycles
-
-  Current Financial Context:
-  - Location: ${currentLocation}
-  - Employer: ${basicInfo.demographics.employer}
-  - Work Experience: ${basicInfo.demographics.workExperience} years
-  - Current Credit Cards: Federal Bank (72% utilization), HDFC (22% utilization), IDFC (0% utilization)
-  - Monthly Debt Service Estimate: ₹${Math.round(currentDebt * 0.025).toLocaleString()} (assuming 30% APR average)
-
-  Make each projection mathematically sound and achievable given the harsh current reality.
-  `;
-
-  const result = await this.model.generateContent(prompt, {
-    responseMimeType: 'application/json'
-  });
-  const response = await result.response;
-  return this.safeParseGeminiJson(response.text());
-}
-
-/**
- * Estimate current income based on EPF contributions and employment data
- * @param {Object} basicInfo - Basic profile information
- * @returns {number} Estimated annual income
- */
-estimateCurrentIncome(basicInfo) {
-  // EPF contribution is typically 12% of basic salary
-  // Employee + Employer contribution gives us a baseline
-  const totalEPFContribution = basicInfo.employmentProfile.employeeContribution + 
-                               basicInfo.employmentProfile.employerContribution;
-  
-  // Work experience and job role estimation
-  const workExperience = basicInfo.demographics.workExperience;
-  
-  // Base estimation from EPF (rough calculation)
-  // EPF is 12% of basic salary, and basic is typically 40-50% of CTC
-  let estimatedBasicSalary = (totalEPFContribution / workExperience) / 0.12;
-  let estimatedCTC = estimatedBasicSalary / 0.45; // Assuming basic is 45% of CTC
-  
-  // Sanity check and adjustments based on current financial situation
-  // Someone with ₹50K debt likely has income constraints
-  const minIncome = 300000; // ₹3L minimum for someone with 6+ years experience
-  const maxIncome = 800000; // ₹8L reasonable maximum given debt situation
-  
-  estimatedCTC = Math.max(minIncome, Math.min(maxIncome, estimatedCTC));
-  
-  // Adjust based on debt-to-income red flags
-  // High debt usually indicates income vs lifestyle mismatch
-  if (basicInfo.financialSummary.debtToSavingsRatio > 10) {
-    estimatedCTC = estimatedCTC * 0.8; // Likely lower income than calculated
+    return Math.round(estimatedCTC);
   }
-  
-  return Math.round(estimatedCTC);
-}
 
-/**
- * Calculate realistic debt payoff timeline
- * @param {number} totalDebt - Current total debt
- * @param {number} monthlyIncome - Monthly income
- * @param {number} savingsRate - Percentage of income for debt repayment
- * @returns {Object} Debt payoff projections
- */
-calculateDebtPayoffProjection(totalDebt, monthlyIncome, savingsRate = 0.30) {
-  const monthlyPayment = monthlyIncome * savingsRate;
-  const averageAPR = 0.24; // 24% average credit card APR in India
-  const monthlyInterestRate = averageAPR / 12;
-  
-  // Calculate payoff time using standard debt formula
-  const payoffMonths = Math.log(1 + (totalDebt * monthlyInterestRate) / monthlyPayment) / 
-                       Math.log(1 + monthlyInterestRate);
-  
-  const totalInterestPaid = (monthlyPayment * payoffMonths) - totalDebt;
-  
-  return {
-    payoffTimeMonths: Math.ceil(payoffMonths),
-    payoffTimeYears: Math.ceil(payoffMonths / 12),
-    totalInterestPaid: Math.round(totalInterestPaid),
-    monthlyPaymentRequired: Math.round(monthlyPayment)
-  };
-}
+  /**
+   * Calculate realistic debt payoff timeline
+   * @param {number} totalDebt - Current total debt
+   * @param {number} monthlyIncome - Monthly income
+   * @param {number} savingsRate - Percentage of income for debt repayment
+   * @returns {Object} Debt payoff projections
+   */
+  calculateDebtPayoffProjection(totalDebt, monthlyIncome, savingsRate = 0.30) {
+    if (totalDebt <= 0) {
+      return { payoffTimeMonths: 0, payoffTimeYears: 0, totalInterestPaid: 0, monthlyPaymentRequired: 0 };
+    }
 
-/**
- * Project net worth growth with realistic assumptions
- * @param {Object} startingPosition - Current financial position
- * @param {number} years - Years to project
- * @param {number} avgSavingsRate - Average savings rate
- * @param {number} investmentReturn - Expected annual return
- * @returns {Object} Net worth projection
- */
-projectNetWorthGrowth(startingPosition, years, avgSavingsRate = 0.20, investmentReturn = 0.12) {
-  const { netWorth, monthlyIncome } = startingPosition;
-  
-  let projectedNetWorth = netWorth;
-  let totalSavings = 0;
-  
-  for (let year = 1; year <= years; year++) {
-    const annualSavings = monthlyIncome * 12 * avgSavingsRate;
-    totalSavings += annualSavings;
-    
-    // Apply investment returns to existing wealth
-    projectedNetWorth = (projectedNetWorth + annualSavings) * (1 + investmentReturn);
-    
-    // Factor in income growth (conservative 8% annually)
-    monthlyIncome *= 1.08;
+    const monthlyPayment = monthlyIncome * savingsRate;
+    if (monthlyPayment <= 0) { // Cannot pay off debt
+        return { payoffTimeMonths: Infinity, payoffTimeYears: Infinity, totalInterestPaid: Infinity, monthlyPaymentRequired: 0 };
+    }
+
+    const averageAPR = 0.24; // 24% average interest rate for personal/credit card loans in India
+    const monthlyInterestRate = averageAPR / 12;
+
+    let remainingDebt = totalDebt;
+    let months = 0;
+    let totalInterestPaid = 0;
+
+    while (remainingDebt > 0 && months < 360) { // Cap at 30 years to prevent infinite loops
+      const interestPayment = remainingDebt * monthlyInterestRate;
+      const principalPayment = monthlyPayment - interestPayment;
+
+      if (principalPayment <= 0) { // If payment barely covers interest, or not at all
+          return { payoffTimeMonths: Infinity, payoffTimeYears: Infinity, totalInterestPaid: Infinity, monthlyPaymentRequired: Math.round(monthlyPayment) };
+      }
+
+      remainingDebt -= principalPayment;
+      totalInterestPaid += interestPayment;
+      months++;
+    }
+
+    return {
+      payoffTimeMonths: months,
+      payoffTimeYears: parseFloat((months / 12).toFixed(1)),
+      totalInterestPaid: Math.round(totalInterestPaid),
+      monthlyPaymentRequired: Math.round(monthlyPayment)
+    };
   }
-  
-  return {
-    projectedNetWorth: Math.round(projectedNetWorth),
-    totalSavingsContributed: Math.round(totalSavings),
-    finalMonthlyIncome: Math.round(monthlyIncome)
-  };
-}
+
+  /**
+   * Project net worth growth with realistic assumptions
+   * @param {Object} startingPosition - Current financial position (netWorth, monthlyIncome)
+   * @param {number} years - Years to project
+   * @param {number} avgSavingsRate - Average savings rate (decimal)
+   * @param {number} investmentReturn - Expected annual return (decimal)
+   * @param {number} incomeGrowthRate - Annual income growth rate (decimal)
+   * @returns {Object} Net worth projection
+   */
+  projectNetWorthGrowth(startingPosition, years, avgSavingsRate = 0.20, investmentReturn = 0.12, incomeGrowthRate = 0.08) {
+    let { netWorth, monthlyIncome } = startingPosition;
+
+    let projectedNetWorth = netWorth;
+    let totalSavingsContributed = 0;
+    let finalMonthlyIncome = monthlyIncome;
+
+    for (let year = 1; year <= years; year++) {
+      const annualSavings = finalMonthlyIncome * 12 * avgSavingsRate;
+      totalSavingsContributed += annualSavings;
+
+      // Apply investment returns to existing wealth and new savings
+      projectedNetWorth = (projectedNetWorth + annualSavings) * (1 + investmentReturn);
+
+      // Factor in income growth
+      finalMonthlyIncome *= (1 + incomeGrowthRate);
+    }
+
+    return {
+      projectedNetWorth: Math.round(projectedNetWorth),
+      totalSavingsContributed: Math.round(totalSavingsContributed),
+      finalMonthlyIncome: Math.round(finalMonthlyIncome)
+    };
+  }
   // Helper methods
   /**
    * Estimates age based on date of joining, assuming a typical starting work age.
