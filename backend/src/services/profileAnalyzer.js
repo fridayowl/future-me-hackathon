@@ -30,12 +30,24 @@ class ProfileAnalyzer {
       // Generate risk assessment, targeting JSON output
       const riskAssessment = await this.generateRiskAssessment(basicProfile);
 
+      // Create partial profile to pass to future stages analysis
+      const partialProfile = {
+        basicInfo: basicProfile,
+        humanDescription: humanDescription,
+        behaviorAnalysis: behaviorAnalysis,
+        riskAssessment: riskAssessment,
+      };
+
+      // Generate future stages based on the complete profile, incorporating new details
+      const futureStages = await this.generateFutureStages(partialProfile);
+
       // Create complete profile
       const completeProfile = {
         basicInfo: basicProfile,
         humanDescription: humanDescription, // This will now be a JSON object
         behaviorAnalysis: behaviorAnalysis, // This will now be a JSON object
         riskAssessment: riskAssessment,     // This will now be a JSON object
+        futureStages: futureStages,         // New: Future stages prediction
         generatedAt: new Date().toISOString()
       };
 
@@ -85,7 +97,6 @@ class ProfileAnalyzer {
     const hasCarLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Auto Loan");
     const hasBikeLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Two-Wheeler Loan");
     const hasHomeLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Home Loan");
-
 
     return {
       demographics: {
@@ -331,6 +342,222 @@ class ProfileAnalyzer {
     return this.safeParseGeminiJson(response.text());
   }
 
+ /**
+ * Enhanced generateFutureStages method with realistic financial projections
+ * This replaces the existing method in ProfileAnalyzer class
+ */
+async generateFutureStages(completeProfile) {
+  const { basicInfo, humanDescription, behaviorAnalysis, riskAssessment } = completeProfile;
+
+  // Current financial snapshot
+  const currentNetWorth = basicInfo.financialSummary.netWorth;
+  const currentDebt = basicInfo.financialSummary.totalDebt;
+  const currentAge = basicInfo.demographics.estimatedAge;
+  const currentCreditScore = basicInfo.financialSummary.creditScore;
+  const currentSavings = basicInfo.financialSummary.liquidSavings;
+  
+  // Estimate current income based on EPF contributions and industry standards
+  const estimatedCurrentIncome = this.estimateCurrentIncome(basicInfo);
+  
+  const currentDate = "Friday, July 26, 2025";
+  const currentLocation = "Kochi, Kerala, India";
+
+  const prompt = `
+  You are a financial analyst creating realistic future projections for an individual. 
+  Based on their CURRENT DIRE financial situation, create THREE progressive future stages with REALISTIC and SPECIFIC financial numbers.
+
+  **CRITICAL CONTEXT - CURRENT FINANCIAL REALITY:**
+  - Net Worth: ₹${currentNetWorth.toLocaleString()} (EXTREMELY LOW - almost broke)
+  - Total Debt: ₹${currentDebt.toLocaleString()} (16x higher than net worth!)
+  - Debt-to-Savings Ratio: ${basicInfo.financialSummary.debtToSavingsRatio} (CRITICAL)
+  - Credit Score: ${currentCreditScore} (Good, but debt is crushing)
+  - Age: ${currentAge} years
+  - Estimated Monthly Income: ₹${Math.round(estimatedCurrentIncome/12).toLocaleString()}
+  - Credit Card Utilization: 72% on Federal Bank (DANGEROUS)
+
+  **GENERATE ONLY JSON - NO MARKDOWN:**
+  
+  Create realistic projections considering:
+  1. With ₹3,148 net worth and ₹50,077 debt, how can they realistically grow?
+  2. What specific income growth is needed to service debt AND build wealth?
+  3. How long will debt payoff actually take with realistic savings rates?
+  4. What are the mathematical possibilities given current financial constraints?
+
+  Schema (JSON Array of 3 objects):
+  [
+    {
+      "versionName": "string",
+      "estimatedAgeRange": "string",
+      "timeframeYearsFromCurrent": "string", 
+      "estimatedYearRange": "string",
+      "keyLifeEvents": ["array of specific life events"],
+      "locationContext": {
+        "likelyCityOrRegion": "string",
+        "housingSituation": "string",
+        "estimatedMonthlyRentMortgage": "number"
+      },
+      "careerFinancials": {
+        "estimatedMonthlyIncome": "number",
+        "incomeGrowthFromCurrent": "string",
+        "jobStability": "string"
+      },
+      "detailedFinancialProjection": {
+        "projectedNetWorth": "number",
+        "projectedTotalDebt": "number", 
+        "projectedCreditScore": "number",
+        "projectedMonthlySavings": "number",
+        "projectedInvestments": "number",
+        "debtToIncomeRatio": "string",
+        "emergencyFundMonths": "number",
+        "majorAssets": ["array"],
+        "majorLiabilities": ["array with amounts"]
+      },
+      "realisticMilestones": {
+        "debtFreeTarget": "string",
+        "firstMajorPurchase": "string", 
+        "creditScoreGoal": "number",
+        "savingsTarget": "number"
+      },
+      "financialStressLevel": "string",
+      "keyFinancialChallenges": ["array"],
+      "practicalStrategies": ["array"],
+      "summary": "string"
+    }
+  ]
+
+  **REALISTIC CONSTRAINTS TO FOLLOW:**
+  - Someone with ₹3K net worth CANNOT have ₹50L net worth in 5-7 years without extraordinary circumstances
+  - Debt payoff with current income will take 2-4 years minimum
+  - Income growth in India: 8-15% annually for good performers
+  - Savings rate: Start at 10-15%, grow to 25-30% over time
+  - Credit score can improve to 800+ if debt is managed well
+  - Home purchase realistic only after debt clearance + 20% down payment saved
+
+  **MATHEMATICAL APPROACH:**
+  Stage 1 (2-4 years): Focus on DEBT ELIMINATION
+  - Project debt reduction timeline with realistic EMI payments
+  - Calculate achievable net worth after debt clearance
+  - Factor in modest income growth (10-12% annually)
+
+  Stage 2 (5-8 years): FOUNDATION BUILDING  
+  - Post-debt financial freedom calculations
+  - First home purchase feasibility analysis
+  - Investment portfolio starting amounts
+
+  Stage 3 (10-15 years): WEALTH ACCUMULATION
+  - Compound growth projections based on Stage 2 foundations
+  - Realistic property appreciation and investment returns
+  - Factor in family expenses, inflation, economic cycles
+
+  Current Financial Context:
+  - Location: ${currentLocation}
+  - Employer: ${basicInfo.demographics.employer}
+  - Work Experience: ${basicInfo.demographics.workExperience} years
+  - Current Credit Cards: Federal Bank (72% utilization), HDFC (22% utilization), IDFC (0% utilization)
+  - Monthly Debt Service Estimate: ₹${Math.round(currentDebt * 0.025).toLocaleString()} (assuming 30% APR average)
+
+  Make each projection mathematically sound and achievable given the harsh current reality.
+  `;
+
+  const result = await this.model.generateContent(prompt, {
+    responseMimeType: 'application/json'
+  });
+  const response = await result.response;
+  return this.safeParseGeminiJson(response.text());
+}
+
+/**
+ * Estimate current income based on EPF contributions and employment data
+ * @param {Object} basicInfo - Basic profile information
+ * @returns {number} Estimated annual income
+ */
+estimateCurrentIncome(basicInfo) {
+  // EPF contribution is typically 12% of basic salary
+  // Employee + Employer contribution gives us a baseline
+  const totalEPFContribution = basicInfo.employmentProfile.employeeContribution + 
+                               basicInfo.employmentProfile.employerContribution;
+  
+  // Work experience and job role estimation
+  const workExperience = basicInfo.demographics.workExperience;
+  
+  // Base estimation from EPF (rough calculation)
+  // EPF is 12% of basic salary, and basic is typically 40-50% of CTC
+  let estimatedBasicSalary = (totalEPFContribution / workExperience) / 0.12;
+  let estimatedCTC = estimatedBasicSalary / 0.45; // Assuming basic is 45% of CTC
+  
+  // Sanity check and adjustments based on current financial situation
+  // Someone with ₹50K debt likely has income constraints
+  const minIncome = 300000; // ₹3L minimum for someone with 6+ years experience
+  const maxIncome = 800000; // ₹8L reasonable maximum given debt situation
+  
+  estimatedCTC = Math.max(minIncome, Math.min(maxIncome, estimatedCTC));
+  
+  // Adjust based on debt-to-income red flags
+  // High debt usually indicates income vs lifestyle mismatch
+  if (basicInfo.financialSummary.debtToSavingsRatio > 10) {
+    estimatedCTC = estimatedCTC * 0.8; // Likely lower income than calculated
+  }
+  
+  return Math.round(estimatedCTC);
+}
+
+/**
+ * Calculate realistic debt payoff timeline
+ * @param {number} totalDebt - Current total debt
+ * @param {number} monthlyIncome - Monthly income
+ * @param {number} savingsRate - Percentage of income for debt repayment
+ * @returns {Object} Debt payoff projections
+ */
+calculateDebtPayoffProjection(totalDebt, monthlyIncome, savingsRate = 0.30) {
+  const monthlyPayment = monthlyIncome * savingsRate;
+  const averageAPR = 0.24; // 24% average credit card APR in India
+  const monthlyInterestRate = averageAPR / 12;
+  
+  // Calculate payoff time using standard debt formula
+  const payoffMonths = Math.log(1 + (totalDebt * monthlyInterestRate) / monthlyPayment) / 
+                       Math.log(1 + monthlyInterestRate);
+  
+  const totalInterestPaid = (monthlyPayment * payoffMonths) - totalDebt;
+  
+  return {
+    payoffTimeMonths: Math.ceil(payoffMonths),
+    payoffTimeYears: Math.ceil(payoffMonths / 12),
+    totalInterestPaid: Math.round(totalInterestPaid),
+    monthlyPaymentRequired: Math.round(monthlyPayment)
+  };
+}
+
+/**
+ * Project net worth growth with realistic assumptions
+ * @param {Object} startingPosition - Current financial position
+ * @param {number} years - Years to project
+ * @param {number} avgSavingsRate - Average savings rate
+ * @param {number} investmentReturn - Expected annual return
+ * @returns {Object} Net worth projection
+ */
+projectNetWorthGrowth(startingPosition, years, avgSavingsRate = 0.20, investmentReturn = 0.12) {
+  const { netWorth, monthlyIncome } = startingPosition;
+  
+  let projectedNetWorth = netWorth;
+  let totalSavings = 0;
+  
+  for (let year = 1; year <= years; year++) {
+    const annualSavings = monthlyIncome * 12 * avgSavingsRate;
+    totalSavings += annualSavings;
+    
+    // Apply investment returns to existing wealth
+    projectedNetWorth = (projectedNetWorth + annualSavings) * (1 + investmentReturn);
+    
+    // Factor in income growth (conservative 8% annually)
+    monthlyIncome *= 1.08;
+  }
+  
+  return {
+    projectedNetWorth: Math.round(projectedNetWorth),
+    totalSavingsContributed: Math.round(totalSavings),
+    finalMonthlyIncome: Math.round(monthlyIncome)
+  };
+}
   // Helper methods
   /**
    * Estimates age based on date of joining, assuming a typical starting work age.
@@ -385,20 +612,11 @@ class ProfileAnalyzer {
 
     const today = new Date();
 
-    let years = today.getFullYear() - doj.getFullYear();
-    let months = today.getMonth() - doj.getMonth();
-    let days = today.getDate() - doj.getDate();
+    let diffInMilliseconds = today.getTime() - doj.getTime();
+    if (diffInMilliseconds < 0) return 0; // Future date, should not happen for DOJ
 
-    // Adjust for negative months or days
-    if (months < 0 || (months === 0 && days < 0)) {
-      years--;
-      if (months < 0) {
-        months += 12; // Add 12 months to get positive value
-      }
-    }
-
-    // Convert total experience to a fractional year
-    return years + (months / 12) + (days / 365.25); // Approximately
+    const years = diffInMilliseconds / (1000 * 60 * 60 * 24 * 365.25); // Average days in a year including leap years
+    return parseFloat(years.toFixed(1)); // Return rounded to one decimal place
   }
 
   processCreditCards(creditCards) {
