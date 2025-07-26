@@ -2,7 +2,6 @@
 // Main React application for Future Me frontend
 
 import React, { useState, useCallback } from "react";
-import ProfileAnalysis from "./components/profileAnalysis";
 import ChatInterface from "./components/ChatInterface";
 import ProfileSummary from "./components/ProfileSummary";
 import PersonaSelector from "./components/personaSelector";
@@ -146,6 +145,16 @@ function App() {
           )}
         </div>
       </header>
+        <div className="h-96 w-screen">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+          />
+        </div>
       <Upload
         fileInputRef={fileInputRef}
         isLoading={isLoading}
@@ -153,7 +162,7 @@ function App() {
       />
       {/* Main Content */}
       <main className="app-main">
-        {currentStep === "profile" && (
+        {/* {currentStep === "profile" && (
           <div className="step-container">
             <ProfileAnalysis
               humanDescription={{
@@ -171,7 +180,7 @@ function App() {
               }}
             />
           </div>
-        )}
+        )} */}
         {error && (
           <div className="error-banner">
             <p>{error}</p>
@@ -182,16 +191,6 @@ function App() {
         {currentStep === "chat" && userProfile && (
           <div className="step-container chat-container">
             {/* Profile Summary */}
-            <div className="h-96 w-screen">
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                nodeTypes={nodeTypes}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-              />
-            </div>
 
             {/* ProfileSummary is now rendered as a custom node in ReactFlow */}
 

@@ -1,14 +1,7 @@
 // frontend/src/components/ProfileAnalysis.jsx
 // Component for uploading and analyzing Fi MCP data
-
+import { Handle } from "@xyflow/react";
 import React, { useState, useRef } from "react";
-import {
-  Upload,
-  User,
-  CreditCard,
-  TrendingUp,
-  AlertCircle,
-} from "lucide-react";
 
 const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
   const [uploadedData, setUploadedData] = useState(null);
@@ -87,10 +80,9 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
                 <span className="preview-label">Employer</span>
                 <span className="preview-value">{previewInfo.employer}</span>
               </div>
+              <Handle type="target" position="top" />
             </div>
-          ) 
-          
-          }
+          )}
           {/* <div className="preview-actions">
             <button
               className="analyze-button"
@@ -115,4 +107,3 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
 };
 
 export default ProfileAnalysis;
-  
