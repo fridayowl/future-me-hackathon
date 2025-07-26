@@ -428,7 +428,7 @@ const ProfileDataTables = ({ profileData }) => {
                   </div>
                 </div>
               </div>
-              
+               
               <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                 <p className="text-sm text-gray-700">{stage.summary}</p>
               </div>
