@@ -399,7 +399,6 @@ body {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 80vh;
 }
 
 /* Profile Summary */
@@ -1057,10 +1056,7 @@ body {
   .preview-grid {
     grid-template-columns: 1fr;
   }
-  
-  .chat-container {
-    height: 70vh;
-  }
+
   
   .questions-grid {
     grid-template-columns: 1fr;
