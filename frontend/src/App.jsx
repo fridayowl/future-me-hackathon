@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import MCPConnection from './components/MCPConnection';
 import ProfileAnalysis from './components/profileAnalysis';
 import ChatInterface from './components/ChatInterface';
+import ProfileDataTables from './components/ProfileDataTables'; // NEW IMPORT
 import PersonaSelector from './components/personaSelector';
 import { apiService } from './services/api';
 import './App.css';
 
 function App() {
-  const [currentStep, setCurrentStep] = useState('connection'); // 'connection', 'profile', 'chat'
+  const [currentStep, setCurrentStep] = useState('connection'); // 'connection', 'profile', 'tables', 'chat'
   const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,7 +39,7 @@ function App() {
       const profileAnalysis = await apiService.analyzeProfile(sampleData.data);
       
       setUserProfile(profileAnalysis.profile);
-      setCurrentStep('chat');
+      setCurrentStep('tables'); // CHANGED: Go to tables first instead of chat
       
     } catch (err) {
       setError(`Failed to load sample data: ${err.message}`);
@@ -57,7 +58,7 @@ function App() {
       if (profileData.basicInfo || profileData.demographics || profileData.financialSummary) {
         console.log('Received already-analyzed profile data');
         setUserProfile(profileData);
-        setCurrentStep('chat');
+        setCurrentStep('tables'); // CHANGED: Go to tables first instead of chat
         return;
       }
 
@@ -66,7 +67,7 @@ function App() {
         console.log('Analyzing raw Fi MCP data');
         const profileAnalysis = await apiService.analyzeProfile(profileData);
         setUserProfile(profileAnalysis.profile);
-        setCurrentStep('chat');
+        setCurrentStep('tables'); // CHANGED: Go to tables first instead of chat
         return;
       }
 
@@ -74,7 +75,7 @@ function App() {
       console.log('Attempting to analyze unknown data format');
       const profileAnalysis = await apiService.analyzeProfile(profileData);
       setUserProfile(profileAnalysis.profile);
-      setCurrentStep('chat');
+      setCurrentStep('tables'); // CHANGED: Go to tables first instead of chat
       
     } catch (err) {
       setError(`Profile analysis failed: ${err.message}`);
@@ -93,6 +94,11 @@ function App() {
     setCurrentStep('profile');
     setUserProfile(null);
     setError(null);
+  };
+
+  // NEW: Function to proceed from tables to chat
+  const proceedToChat = () => {
+    setCurrentStep('chat');
   };
 
   return (
@@ -132,6 +138,55 @@ function App() {
           />
         )}
 
+        {/* NEW: Tables Step */}
+        {currentStep === 'tables' && userProfile && (
+          <div className="tables-step">
+            <ProfileDataTables profileData={userProfile} />
+            
+            {/* Action buttons */}
+            <div className="tables-actions" style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              display: 'flex',
+              gap: '10px',
+              zIndex: 1000
+            }}>
+              <button
+                className="nav-button secondary"
+                onClick={resetToConnection}
+                disabled={isLoading}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                ← Back to Connection
+              </button>
+              
+              <button
+                className="nav-button primary"
+                onClick={proceedToChat}
+                disabled={isLoading}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Start Chat with Future Me →
+              </button>
+            </div>
+          </div>
+        )}
+
         {currentStep === 'chat' && userProfile && (
           <ChatInterface
             userProfile={userProfile}
@@ -143,7 +198,7 @@ function App() {
 
         {/* Navigation */}
         <div className="app-navigation">
-          {currentStep !== 'connection' && (
+          {currentStep !== 'connection' && currentStep !== 'tables' && (
             <button
               className="nav-button"
               onClick={resetToConnection}
@@ -162,6 +217,18 @@ function App() {
               Use File Upload Instead
             </button>
           )}
+
+          {/* NEW: Navigation from chat back to tables */}
+          {currentStep === 'chat' && userProfile && (
+            <button
+              className="nav-button secondary"
+              onClick={() => setCurrentStep('tables')}
+              disabled={isLoading}
+              style={{ marginLeft: '10px' }}
+            >
+              View Data Tables
+            </button>
+          )}
         </div>
       </main>
 
@@ -171,6 +238,7 @@ function App() {
           <p>
             {currentStep === 'connection' ? 'Connecting to Fi MCP...' :
              currentStep === 'profile' ? 'Analyzing your financial profile...' :
+             currentStep === 'tables' ? 'Rendering data tables...' :
              'Processing...'}
           </p>
         </div>

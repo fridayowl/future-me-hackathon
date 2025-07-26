@@ -1389,3 +1389,25 @@ body {
 .refresh-button:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.05);
 }
+/* Add to your existing App.css */
+
+.tables-step {
+  min-height: 100vh;
+  padding-bottom: 100px; /* Space for fixed buttons */
+}
+
+.tables-actions button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.tables-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Make sure the ProfileDataTables component has proper styling */
+.profile-data-tables {
+  max-width: 100%;
+  overflow-x: auto;
+}
