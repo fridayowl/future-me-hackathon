@@ -191,7 +191,7 @@ const ChatInterface = ({ userProfile, selectedPersona, onPersonaUpdate }) => {
       case 'user':
         return (
           <div key={message.id} className="message user-message">
-            <div className="message-content">
+            <div className="message-content ">
               <p>{message.content}</p>
             </div>
             <div className="message-time">
@@ -296,7 +296,7 @@ const ChatInterface = ({ userProfile, selectedPersona, onPersonaUpdate }) => {
           </div>
         )}
         
-        <div ref={messagesEndRef} />
+        <div className='text-black' ref={messagesEndRef} />
       </div>
 
       {/* Suggested Questions */}

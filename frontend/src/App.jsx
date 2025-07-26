@@ -1,32 +1,37 @@
 // frontend/src/App.jsx
 // Main React application for Future Me frontend
 
-import React, { useState } from 'react';
-import ProfileAnalysis from './components/profileAnalysis';
-import ChatInterface from './components/chatInterface';
-import PersonaSelector from './components/personaSelector';
-import { apiService } from './services/api';
-import './App.css';
+import React, { useState } from "react";
+import ProfileAnalysis from "./components/profileAnalysis";
+import ChatInterface from "./components/chatInterface";
+import PersonaSelector from "./components/personaSelector";
+import { apiService } from "./services/api";
+import { useRef } from "react";
+import { Upload } from "lucide-react";
+import "./App.css";
 
 function App() {
-  const [currentStep, setCurrentStep] = useState('profile'); // 'profile', 'chat'
+  const fileInputRef = useRef();
+  const [currentStep, setCurrentStep] = useState("profile"); // 'profile', 'chat'
   const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedPersona, setSelectedPersona] = useState({ age: 40, characteristics: null });
+  const [selectedPersona, setSelectedPersona] = useState({
+    age: 40,
+    characteristics: null,
+  });
 
   // Load sample data for demo
   const loadSampleData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const sampleData = await apiService.getSampleData();
       const profileAnalysis = await apiService.analyzeProfile(sampleData.data);
-      
+
       setUserProfile(profileAnalysis.profile);
-      setCurrentStep('chat');
-      
+      setCurrentStep("chat");
     } catch (err) {
       setError(`Failed to load sample data: ${err.message}`);
     } finally {
@@ -39,11 +44,10 @@ function App() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const profileAnalysis = await apiService.analyzeProfile(fiMCPData);
       setUserProfile(profileAnalysis.profile);
-      setCurrentStep('chat');
-      
+      setCurrentStep("chat");
     } catch (err) {
       setError(`Profile analysis failed: ${err.message}`);
     } finally {
@@ -52,9 +56,27 @@ function App() {
   };
 
   const resetToProfile = () => {
-    setCurrentStep('profile');
+    setCurrentStep("profile");
     setUserProfile(null);
     setError(null);
+  };
+
+  // Handle file input change
+  const handleFileInput = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      setIsLoading(true);
+      setError(null);
+      const text = await file.text();
+      await analyzeProfile(text);
+    } catch (err) {
+      setError(`Failed to read file: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+      // Reset file input so the same file can be uploaded again if needed
+      event.target.value = "";
+    }
   };
 
   return (
@@ -63,16 +85,35 @@ function App() {
       <header className="app-header">
         <div className="header-content">
           {userProfile && (
-            <button 
-              onClick={resetToProfile}
-              className="reset-button"
-            >
+            <button onClick={resetToProfile} className="reset-button">
               New Analysis
             </button>
           )}
         </div>
       </header>
+      <div className="sample-section">
+        <div className="sample-section">
+          <button
+            className="sample-button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+          >
+            <Upload size={20} />
+            Upload Fi data
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt"
+            onChange={handleFileInput}
+            style={{ display: "none" }}
+          />
 
+          <p className="sample-description">
+            Use our sample profile to see Future Me in action
+          </p>
+        </div>
+      </div>
       {/* Main Content */}
       <main className="app-main">
         {error && (
@@ -81,17 +122,19 @@ function App() {
             <button onClick={() => setError(null)}>Dismiss</button>
           </div>
         )}
-        {currentStep === 'profile' && (
+        {currentStep === "profile" && (
           <div className="step-container">
-            <ProfileAnalysis 
-              onAnalyzeProfile={analyzeProfile}
-              onLoadSample={loadSampleData}
-              isLoading={isLoading}
-            />
+            {analyzeProfile ?? (
+              <ProfileAnalysis
+                onAnalyzeProfile={analyzeProfile}
+                onLoadSample={loadSampleData}
+                isLoading={isLoading}
+              />
+            )}
           </div>
         )}
 
-        {currentStep === 'chat' && userProfile && (
+        {currentStep === "chat" && userProfile && (
           <div className="step-container chat-container">
             {/* Profile Summary */}
             <div className="profile-summary">
@@ -99,37 +142,63 @@ function App() {
               <div className="profile-stats">
                 <div className="stat">
                   <span className="stat-label">Age</span>
-                  <span className="stat-value">{userProfile.demographics?.estimatedAge || 'Unknown'}</span>
+                  <span className="stat-value">
+                    {userProfile.demographics?.estimatedAge || "Unknown"}
+                  </span>
                 </div>
                 <div className="stat">
                   <span className="stat-label">Credit Score</span>
-                  <span className="stat-value">{userProfile.financialSummary?.creditScore || 'N/A'}</span>
+                  <span className="stat-value">
+                    {userProfile.financialSummary?.creditScore || "N/A"}
+                  </span>
                 </div>
                 <div className="stat">
                   <span className="stat-label">Net Worth</span>
-                  <span className="stat-value">₹{userProfile.financialSummary?.netWorth?.toLocaleString() || '0'}</span>
+                  <span className="stat-value">
+                    ₹
+                    {userProfile.financialSummary?.netWorth?.toLocaleString() ||
+                      "0"}
+                  </span>
                 </div>
                 <div className="stat">
                   <span className="stat-label">Total Debt</span>
-                  <span className="stat-value">₹{userProfile.financialSummary?.totalDebt?.toLocaleString() || '0'}</span>
+                  <span className="stat-value">
+                    ₹
+                    {userProfile.financialSummary?.totalDebt?.toLocaleString() ||
+                      "0"}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Persona Selector */}
-            <PersonaSelector 
+            <PersonaSelector
               currentAge={userProfile.demographics?.estimatedAge || 26}
               selectedAge={selectedPersona.age}
-              onAgeSelect={(age) => setSelectedPersona({ age, characteristics: null })}
+              onAgeSelect={(age) =>
+                setSelectedPersona({ age, characteristics: null })
+              }
               userProfile={userProfile}
             />
 
             {/* Chat Interface */}
-            <ChatInterface 
-              userProfile={userProfile}
-              selectedPersona={selectedPersona}
-              onPersonaUpdate={setSelectedPersona}
-            />
+            <div className="flex">
+              <ChatInterface
+                userProfile={userProfile}
+                selectedPersona={selectedPersona}
+                onPersonaUpdate={setSelectedPersona}
+              />
+              <ChatInterface
+                userProfile={userProfile}
+                selectedPersona={selectedPersona}
+                onPersonaUpdate={setSelectedPersona}
+              />
+              <ChatInterface
+                userProfile={userProfile}
+                selectedPersona={selectedPersona}
+                onPersonaUpdate={setSelectedPersona}
+              />
+            </div>
           </div>
         )}
       </main>

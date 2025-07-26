@@ -12,15 +12,6 @@ import {
 
 const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
   const [uploadedData, setUploadedData] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const fileInputRef = useRef(null);
-
-
-  const handleFileInput = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
 
   const handleFile = (file) => {
     // if (file.type !== "application/json") {
@@ -33,7 +24,6 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
       try {
         const jsonData = JSON.parse(e.target.result);
         setUploadedData(jsonData);
-        setShowPreview(true);
       } catch (error) {
         alert("Invalid JSON file format");
       }
@@ -72,74 +62,10 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
   const previewInfo = uploadedData ? extractPreviewInfo(uploadedData) : null;
 
   return (
-    <div className="profile-analysis" style={{ backgroundColor: '#0b0f10' }}>
-      {!showPreview ? (
-        <div className="upload-section ">
-          {/* File Upload Area */}
-          {/* Sample Data Option */}
-          <div className="sample-section">
-            <div className="sample-section">
-              <button
-                className="sample-button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isLoading}
-              >
-                <Upload size={20} />
-                Upload Fi data
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".txt"
-                onChange={handleFileInput}
-                style={{ display: "none" }}
-              />
-
-              <p className="sample-description">
-                Use our sample profile to see Future Me in action
-              </p>
-            </div>
-
-          </div>
-
-          {/* Features Preview */}
-          <div className="features-preview">
-            <h3>What You'll Get</h3>
-            <div className="features-grid">
-              <div className="feature">
-                <CreditCard size={24} />
-                <h4>Complete Financial Analysis</h4>
-                <p>
-                  Detailed breakdown of your assets, liabilities, and financial
-                  behavior
-                </p>
-              </div>
-              <div className="feature">
-                <User size={24} />
-                <h4>Future Me Conversations</h4>
-                <p>
-                  Chat with different versions of yourself at 30, 40, 60+ years
-                  old
-                </p>
-              </div>
-              <div className="feature">
-                <TrendingUp size={24} />
-                <h4>Personalized Advice</h4>
-                <p>Get specific financial guidance based on your actual data</p>
-              </div>
-              <div className="feature">
-                <AlertCircle size={24} />
-                <h4>Risk Assessment</h4>
-                <p>
-                  Identify financial risks and opportunities for your future
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
+    <div className="profile-analysis" style={{ backgroundColor: "#0b0f10" }}>
+      {
         <div className="preview-section">
-          <h3>Data Preview</h3>
+          (
           <div className="preview-grid">
             <div className="preview-item">
               <span className="preview-label">Net Worth</span>
@@ -162,7 +88,7 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
               <span className="preview-value">{previewInfo.employer}</span>
             </div>
           </div>
-
+          )
           <div className="preview-actions">
             <button
               className="analyze-button"
@@ -174,7 +100,6 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
             <button
               className="cancel-button"
               onClick={() => {
-                setShowPreview(false);
                 setUploadedData(null);
               }}
             >
@@ -182,9 +107,10 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
             </button>
           </div>
         </div>
-      )}
+      }
     </div>
   );
 };
 
 export default ProfileAnalysis;
+  
