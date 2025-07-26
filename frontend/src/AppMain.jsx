@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import MCPConnection from './components/MCPConnection';
 import ProfileAnalysis from './components/profileAnalysis';
 import ChatInterface from './components/ChatInterface';
-import ProfileFlow from './components/ProfileFlow'
+import ProfileDataTables from './components/ProfileDataTables'; // NEW IMPORT
+import PersonaSelector from './components/PersonaSelector'; // Corrected filename for consistency
 import { apiService } from './services/api';
 import './App.css'; // Make sure this path is correct
 
@@ -142,7 +143,7 @@ function App() {
         {/* NEW: Tables Step */}
         {currentStep === 'tables' && userProfile && (
           <div className="tables-step">
-            <ProfileFlow profileData={userProfile} />
+            <ProfileDataTables profileData={userProfile} />
             
             {/* Action buttons */}
             <div className="tables-actions" style={{
