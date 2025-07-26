@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import ProfileAnalysis from "./components/profileAnalysis";
-import ChatInterface from "./components/chatInterface";
+import ChatInterface from "./components/ChatInterface";
 import PersonaSelector from "./components/personaSelector";
 import { apiService } from "./services/api";
 import { useRef } from "react";
@@ -124,13 +124,11 @@ function App() {
         )}
         {currentStep === "profile" && (
           <div className="step-container">
-            {analyzeProfile ?? (
-              <ProfileAnalysis
-                onAnalyzeProfile={analyzeProfile}
-                onLoadSample={loadSampleData}
-                isLoading={isLoading}
-              />
-            )}
+            <ProfileAnalysis
+              onAnalyzeProfile={analyzeProfile}
+              onLoadSample={loadSampleData}
+              isLoading={isLoading}
+            />
           </div>
         )}
 
@@ -182,24 +180,12 @@ function App() {
             />
 
             {/* Chat Interface */}
-            <div className="flex">
-              <ChatInterface
-                userProfile={userProfile}
-                selectedPersona={selectedPersona}
-                onPersonaUpdate={setSelectedPersona}
-              />
-              <ChatInterface
-                userProfile={userProfile}
-                selectedPersona={selectedPersona}
-                onPersonaUpdate={setSelectedPersona}
-              />
               <ChatInterface
                 userProfile={userProfile}
                 selectedPersona={selectedPersona}
                 onPersonaUpdate={setSelectedPersona}
               />
             </div>
-          </div>
         )}
       </main>
 

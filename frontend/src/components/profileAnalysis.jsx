@@ -65,31 +65,33 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
     <div className="profile-analysis" style={{ backgroundColor: "#0b0f10" }}>
       {
         <div className="preview-section">
-          (
-          <div className="preview-grid">
-            <div className="preview-item">
-              <span className="preview-label">Net Worth</span>
-              <span className="preview-value">
-                ₹{parseInt(previewInfo.netWorth).toLocaleString()}
-              </span>
+          {previewInfo && (
+            <div className="preview-grid">
+              <div className="preview-item">
+                <span className="preview-label">Net Worth</span>
+                <span className="preview-value">
+                  ₹{parseInt(previewInfo.netWorth).toLocaleString()}
+                </span>
+              </div>
+              <div className="preview-item">
+                <span className="preview-label">Credit Score</span>
+                <span className="preview-value">{previewInfo.creditScore}</span>
+              </div>
+              <div className="preview-item">
+                <span className="preview-label">Total Debt</span>
+                <span className="preview-value">
+                  ₹{parseInt(previewInfo.totalDebt).toLocaleString()}
+                </span>
+              </div>
+              <div className="preview-item">
+                <span className="preview-label">Employer</span>
+                <span className="preview-value">{previewInfo.employer}</span>
+              </div>
             </div>
-            <div className="preview-item">
-              <span className="preview-label">Credit Score</span>
-              <span className="preview-value">{previewInfo.creditScore}</span>
-            </div>
-            <div className="preview-item">
-              <span className="preview-label">Total Debt</span>
-              <span className="preview-value">
-                ₹{parseInt(previewInfo.totalDebt).toLocaleString()}
-              </span>
-            </div>
-            <div className="preview-item">
-              <span className="preview-label">Employer</span>
-              <span className="preview-value">{previewInfo.employer}</span>
-            </div>
-          </div>
-          )
-          <div className="preview-actions">
+          ) 
+          
+          }
+          {/* <div className="preview-actions">
             <button
               className="analyze-button"
               onClick={handleAnalyze}
@@ -105,7 +107,7 @@ const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
             >
               Upload Different File
             </button>
-          </div>
+          </div> */}
         </div>
       }
     </div>

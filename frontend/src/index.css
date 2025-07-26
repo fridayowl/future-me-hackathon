@@ -51,3 +51,16 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+/* Make loading message text visible in chat */
+.ai-message.loading .message-content p {
+  color: #2bbda2;
+}
+
+/* Make AI message background dark and text white for visibility */
+.ai-message {
+  background: #181f22;
+}
+.ai-message .message-content p {
+  color: #000;
+}
