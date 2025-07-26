@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-unused-vars */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect,useRef } from 'react';
 import {
   ReactFlow,
   addEdge,
@@ -18,6 +18,7 @@ const nodeTypes = {
   futureMe: FutureMe,
 };
 
+
 const ProfileFlow = ({ profileData, onStartConversation }) => {
   console.log("profile data ", profileData)
   const [nodes, setNodes] = useState([]);
@@ -25,7 +26,13 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
   const [originalFutureStages, setOriginalFutureStages] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [appliedActions, setAppliedActions] = useState([]);
+const reactFlowInstanceRef = useRef(null);
 
+
+const onInit = (instance) => {
+  reactFlowInstanceRef.current = instance;
+  instance.setViewport({ x: 0, y: 0, zoom:0.05 }, { duration: 800 });
+};
   // Enhanced financial action calculator
   const calculateFinancialImpact = useCallback((actionType, actionData, currentProfile) => {
     const impact = {
@@ -299,7 +306,7 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
     const presentNode = {
       id: 'present',
       type: 'presentMe',
-      position: { x: 300, y: 50 },
+      position: { x: 2800, y: -800 },
       data: {
         humanDescription: {
           name: profileData.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
@@ -329,8 +336,8 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
           id: `future-${index}`,
           type: 'futureMe',
           position: { 
-            x: 100 + (index * 990), 
-            y: 350 
+            x: 300 + (index * 990), 
+            y: 20 
           },
           data: {
             versionName: stage.versionName || `Future Me ${index + 1}`,
@@ -465,10 +472,12 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+        nod esDraggable={false}  
+           onInit={onInit}     
           fitView
           fitViewOptions={{
             padding: 0.1,
-            includeHiddenNodes: false,
+            includeHiddenNodes: true,
           }}
           defaultEdgeOptions={{
             style: { strokeWidth: 2, stroke: '#6366f1' },
