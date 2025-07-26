@@ -24,22 +24,22 @@ function App() {
   });
 
   // Load sample data for demo
-  const loadSampleData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  // const loadSampleData = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     setError(null);
 
-      const sampleData = await apiService.getSampleData();
-      const profileAnalysis = await apiService.analyzeProfile(sampleData.data);
+  //     const sampleData = await apiService.getSampleData();
+  //     const profileAnalysis = await apiService.analyzeProfile(sampleData.data);
 
-      setUserProfile(profileAnalysis.profile);
-      setCurrentStep("chat");
-    } catch (err) {
-      setError(`Failed to load sample data: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     setUserProfile(profileAnalysis.profile);
+  //     setCurrentStep("chat");
+  //   } catch (err) {
+  //     setError(`Failed to load sample data: ${err.message}`);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Analyze uploaded Fi MCP data
   const analyzeProfile = async (fiMCPData) => {
@@ -100,26 +100,50 @@ function App() {
       />
       {/* Main Content */}
       <main className="app-main">
+        {currentStep === "profile" && (
+          <div className="step-container">
+            <ProfileAnalysis
+              humanDescription={{
+                name: "Individual X",
+                age: 28,
+                lifeStage: "Early Career Professional",
+                netWorth: 3148,
+                totalLiability: 50077,
+                creditScore: 758,
+                employment: {
+                  currentEmployer: "SIMPLY VYAPAR APPS PRIVATE LIMITED",
+                  workExperienceYears: 6.57,
+                  careerTrajectory: "Early Career",
+                },
+              }}
+            />
+          </div>
+        )}
         {error && (
           <div className="error-banner">
             <p>{error}</p>
             <button onClick={() => setError(null)}>Dismiss</button>
           </div>
         )}
-        {currentStep === "profile" && (
-          <div className="step-container">
-            <ProfileAnalysis
-              onAnalyzeProfile={analyzeProfile}
-              onLoadSample={loadSampleData}
-              isLoading={isLoading}
-            />
-          </div>
-        )}
 
         {currentStep === "chat" && userProfile && (
           <div className="step-container chat-container">
             {/* Profile Summary */}
-            <ProfileSummary userProfile={userProfile} />
+            <ProfileSummary
+              humanDescription={{
+                name: "Individual X",
+                age: 28,
+                lifeStage: "Early Career Professional",
+                netWorth: 3148,
+                totalLiability: 50077,
+                creditScore: 758,
+                employment: {
+                  currentEmployer: "SIMPLY VYAPAR APPS PRIVATE LIMITED",
+                  workExperienceYears: 6.57,
+                  careerTrajectory: "Early Career",
+                },
+              }}
+            />
 
             {/* Persona Selector */}
             {/* <PersonaSelector
@@ -132,12 +156,13 @@ function App() {
             /> */}
 
             {/* Chat Interface */}
-              <ChatInterface
-                userProfile={userProfile}
-                selectedPersona={selectedPersona}
-                onPersonaUpdate={setSelectedPersona}
-              />
-            </div>
+
+            <ChatInterface
+              userProfile={userProfile}
+              selectedPersona={selectedPersona}
+              onPersonaUpdate={setSelectedPersona}
+            />
+          </div>
         )}
       </main>
 

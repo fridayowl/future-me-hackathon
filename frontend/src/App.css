@@ -330,9 +330,10 @@ body {
   gap: 1rem;
   margin-bottom: 2rem;
 }
-
+.twoXL {
+  grid-column: span 2;
+}
 .preview-item {
-  display: flex;
   flex-direction: column;
   padding: 1rem;
   background: var(--bg-secondary);
@@ -348,7 +349,6 @@ body {
 }
 
 .preview-value {
-  font-size: 1.2rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-top: 0.25rem;

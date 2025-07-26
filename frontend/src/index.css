@@ -1,4 +1,11 @@
 :root {
+  /* Tailwind base styles will be injected below */
+}
+
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+
+:root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
