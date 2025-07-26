@@ -49,7 +49,7 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
         setUploadedData(jsonData);
         setShowPreview(true);
       } catch (error) {
-        alert("Invalid JSON file format");
+        alert("Invalid JSON file format",error);
       }
     };
     reader.readAsText(file);

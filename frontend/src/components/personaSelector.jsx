@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // frontend/src/components/PersonaSelector.jsx
 // Component for selecting different Future Me personas
 
