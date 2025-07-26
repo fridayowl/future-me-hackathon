@@ -4,6 +4,15 @@
 import React, { useState, useCallback } from "react";
 import ChatInterface from "./components/ChatInterface";
 import ProfileSummary from "./components/ProfileSummary";
+import { Handle, Position } from "@xyflow/react";
+
+// Simple custom node for n2 with a visible handle
+const SimpleNode = ({ data }) => (
+  <div style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8, minWidth: 120, textAlign: 'center' }}>
+    {data.label}
+    <Handle type="target" position={Position.Top} style={{ background: '#2bbda2' }} />
+  </div>
+);
 import PersonaSelector from "./components/personaSelector";
 import { apiService } from "./services/api";
 import { useRef } from "react";
@@ -17,7 +26,13 @@ import {
   addEdge,
 } from "@xyflow/react";
 const nodeTypes = {
-  profileSummary: ProfileSummary,
+  profileSummary: (props) => (
+    <div style={{ position: 'relative' }}>
+      <ProfileSummary {...props} />
+      <Handle type="source" position={Position.Bottom} style={{ background: '#2bbda2' }} />
+    </div>
+  ),
+  simple: SimpleNode,
 };
 
 const initialNodes = [
@@ -40,11 +55,27 @@ const initialNodes = [
         },
       },
     },
+    sourcePosition: 'bottom',
   },
-  { id: "n2", position: { x: 0, y: 100 }, data: { label: "Node 2" } },
+  {
+    id: "n2",
+    type: 'simple',
+    position: { x: 0, y: 100 },
+    data: { label: "Node 2" },
+    targetPosition: 'top',
+  },
 ];
 
-const initialEdges = [{ id: "n1-n2", source: "n1", target: "n2" }];
+const initialEdges = [
+  {
+    id: "n1-n2",
+    source: "n1",
+    target: "n2",
+    sourceHandle: null, // default handle
+    targetHandle: null, // default handle
+    type: 'default',
+  },
+];
 
 import "@xyflow/react/dist/style.css";
 
