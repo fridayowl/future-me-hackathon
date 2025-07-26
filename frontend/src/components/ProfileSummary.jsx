@@ -20,26 +20,27 @@ const ProfileSummary = ({ humanDescription }) => {
             <span className="text-4xl preview-value">{name}</span>
             <div className="text-xs">{lifeStage}</div>
           </div>
-          <div className=" preview-item ">
+          <div className="twoXB flex items-center justify-center preview-item ">
             <span className="preview-value text-5xl text-center items-center flex justify-center">
               {age}
             </span>
           </div>
 
           <div className="preview-item">
-            <span className="preview-label">Net Worth</span>
+            <span className="preview-label">Net Worth: </span>
             <span className="preview-value">
               ₹{parseInt(netWorth).toLocaleString()}
             </span>
+            <div>
+                <span className="preview-label">Total Liability: </span>
+                <span className="preview-value">
+                  ₹{parseInt(totalLiability).toLocaleString()}
+                </span>
+            </div>
           </div>
-          <div className="preview-item">
-            <span className="preview-label">Total Liability</span>
-            <span className="preview-value">
-              ₹{parseInt(totalLiability).toLocaleString()}
-            </span>
-          </div>
+
           <div className="preview-item twoXL text-center">
-            <span className="preview-label">Credit Score</span>
+            <span className="preview-label">Credit Score: </span>
             <span className="preview-value">{creditScore}</span>
           </div>
           <div className="preview-item text-center twoXL">
@@ -52,7 +53,7 @@ const ProfileSummary = ({ humanDescription }) => {
             <div>
               <span className="preview-label">Work Experience: </span>
               <span className="preview-value">
-                {employment?.workExperienceYears}yrs | 
+                {employment?.workExperienceYears}yrs |
                 <span className="preview-label"> Career Trajectory: </span>
                 <span className="preview-value">
                   {employment?.careerTrajectory}

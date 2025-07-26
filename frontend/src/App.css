@@ -333,6 +333,9 @@ body {
 .twoXL {
   grid-column: span 2;
 }
+.twoXB {
+  grid-row: span 2;
+}
 .preview-item {
   flex-direction: column;
   padding: 1rem;
