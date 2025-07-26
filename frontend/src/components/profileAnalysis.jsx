@@ -1,34 +1,20 @@
 // frontend/src/components/ProfileAnalysis.jsx
 // Component for uploading and analyzing Fi MCP data
 
-import React, { useState, useRef } from 'react';
-import { Upload, User, CreditCard, TrendingUp, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import {
+  Upload,
+  User,
+  CreditCard,
+  TrendingUp,
+  AlertCircle,
+} from "lucide-react";
 
-const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
-  const [dragActive, setDragActive] = useState(false);
+const ProfileAnalysis = ({ onAnalyzeProfile, isLoading }) => {
   const [uploadedData, setUploadedData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
-    }
-  };
 
   const handleFileInput = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -37,10 +23,10 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
   };
 
   const handleFile = (file) => {
-    if (file.type !== "application/json") {
-      alert("Please upload a JSON file");
-      return;
-    }
+    // if (file.type !== "application/json") {
+    //   alert("Please upload a JSON file");
+    //   return;
+    // }
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -64,66 +50,56 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
   const extractPreviewInfo = (data) => {
     if (!data || !data.dataItems) return null;
 
-    const netWorth = data.dataItems.find(item => item.netWorthSummary);
-    const credit = data.dataItems.find(item => item.creditReportData);
-    const epf = data.dataItems.find(item => item.epfAccountData);
+    const netWorth = data.dataItems.find((item) => item.netWorthSummary);
+    const credit = data.dataItems.find((item) => item.creditReportData);
+    const epf = data.dataItems.find((item) => item.epfAccountData);
 
     return {
-      netWorth: netWorth?.netWorthSummary?.totalNetWorthValue?.units || '0',
-      creditScore: credit?.creditReportData?.creditReports?.[0]?.creditReportData?.score?.bureauScore || 'N/A',
-      employer: epf?.epfAccountData?.uanAccounts?.[0]?.rawDetails?.est_details?.[0]?.est_name || 'Unknown',
-      totalDebt: credit?.creditReportData?.creditReports?.[0]?.creditReportData?.creditAccount?.creditAccountSummary?.totalOutstandingBalance?.outstandingBalanceAll || '0'
+      netWorth: netWorth?.netWorthSummary?.totalNetWorthValue?.units || "0",
+      creditScore:
+        credit?.creditReportData?.creditReports?.[0]?.creditReportData?.score
+          ?.bureauScore || "N/A",
+      employer:
+        epf?.epfAccountData?.uanAccounts?.[0]?.rawDetails?.est_details?.[0]
+          ?.est_name || "Unknown",
+      totalDebt:
+        credit?.creditReportData?.creditReports?.[0]?.creditReportData
+          ?.creditAccount?.creditAccountSummary?.totalOutstandingBalance
+          ?.outstandingBalanceAll || "0",
     };
   };
 
   const previewInfo = uploadedData ? extractPreviewInfo(uploadedData) : null;
 
   return (
-    <div className="profile-analysis">
-      <div className="analysis-header">
-        <h2>Analyze Your Financial Profile</h2>
-        <p>Upload your Fi Money MCP data to start your conversation with Future You</p>
-      </div>
-
+    <div className="profile-analysis" style={{ backgroundColor: '#0b0f10' }}>
       {!showPreview ? (
-        <div className="upload-section">
+        <div className="upload-section ">
           {/* File Upload Area */}
-          <div
-            className={`upload-area ${dragActive ? 'drag-active' : ''}`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload size={48} className="upload-icon" />
-            <h3>Upload Fi MCP Data</h3>
-            <p>Drag and drop your JSON file here, or click to browse</p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileInput}
-              style={{ display: 'none' }}
-            />
-          </div>
-
           {/* Sample Data Option */}
           <div className="sample-section">
-            <div className="divider">
-              <span>OR</span>
+            <div className="sample-section">
+              <button
+                className="sample-button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+              >
+                <Upload size={20} />
+                Upload Fi data
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt"
+                onChange={handleFileInput}
+                style={{ display: "none" }}
+              />
+
+              <p className="sample-description">
+                Use our sample profile to see Future Me in action
+              </p>
             </div>
-            <button 
-              className="sample-button"
-              onClick={onLoadSample}
-              disabled={isLoading}
-            >
-              <User size={20} />
-              Try with Sample Data
-            </button>
-            <p className="sample-description">
-              Use our sample profile to see Future Me in action
-            </p>
+
           </div>
 
           {/* Features Preview */}
@@ -133,12 +109,18 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
               <div className="feature">
                 <CreditCard size={24} />
                 <h4>Complete Financial Analysis</h4>
-                <p>Detailed breakdown of your assets, liabilities, and financial behavior</p>
+                <p>
+                  Detailed breakdown of your assets, liabilities, and financial
+                  behavior
+                </p>
               </div>
               <div className="feature">
                 <User size={24} />
                 <h4>Future Me Conversations</h4>
-                <p>Chat with different versions of yourself at 30, 40, 60+ years old</p>
+                <p>
+                  Chat with different versions of yourself at 30, 40, 60+ years
+                  old
+                </p>
               </div>
               <div className="feature">
                 <TrendingUp size={24} />
@@ -148,7 +130,9 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
               <div className="feature">
                 <AlertCircle size={24} />
                 <h4>Risk Assessment</h4>
-                <p>Identify financial risks and opportunities for your future</p>
+                <p>
+                  Identify financial risks and opportunities for your future
+                </p>
               </div>
             </div>
           </div>
@@ -159,7 +143,9 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
           <div className="preview-grid">
             <div className="preview-item">
               <span className="preview-label">Net Worth</span>
-              <span className="preview-value">₹{parseInt(previewInfo.netWorth).toLocaleString()}</span>
+              <span className="preview-value">
+                ₹{parseInt(previewInfo.netWorth).toLocaleString()}
+              </span>
             </div>
             <div className="preview-item">
               <span className="preview-label">Credit Score</span>
@@ -167,7 +153,9 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
             </div>
             <div className="preview-item">
               <span className="preview-label">Total Debt</span>
-              <span className="preview-value">₹{parseInt(previewInfo.totalDebt).toLocaleString()}</span>
+              <span className="preview-value">
+                ₹{parseInt(previewInfo.totalDebt).toLocaleString()}
+              </span>
             </div>
             <div className="preview-item">
               <span className="preview-label">Employer</span>
@@ -176,14 +164,14 @@ const ProfileAnalysis = ({ onAnalyzeProfile, onLoadSample, isLoading }) => {
           </div>
 
           <div className="preview-actions">
-            <button 
+            <button
               className="analyze-button"
               onClick={handleAnalyze}
               disabled={isLoading}
             >
-              {isLoading ? 'Analyzing...' : 'Start Analysis'}
+              {isLoading ? "Analyzing..." : "Start Analysis"}
             </button>
-            <button 
+            <button
               className="cancel-button"
               onClick={() => {
                 setShowPreview(false);

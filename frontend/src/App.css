@@ -1,21 +1,20 @@
 /* frontend/src/App.css */
 /* Main styling for Future Me application */
-
+@import "tailwindcss";
 :root {
-  --primary-color: #3B82F6;
-  --secondary-color: #10B981;
-  --accent-color: #8B5CF6;
-  --warning-color: #F59E0B;
-  --error-color: #EF4444;
-  --text-primary: #1F2937;
-  --text-secondary: #6B7280;
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F9FAFB;
-  --bg-tertiary: #F3F4F6;
-  --border-color: #E5E7EB;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --primary-color: #2bbda2;
+  --secondary-color: #2bbda2;
+
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  
+  --bg-primary: #0b0f10;
+  --bg-secondary: #1c2123;
+  --border-color: #2f3638;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+  --shadow-md: 0 1px 3px 0 rgba(0,0,0,0.3), 0 4px 8px 3px rgba(0,0,0,0.15);
+  
   --border-radius: 8px;
   --border-radius-lg: 12px;
   --transition: all 0.2s ease-in-out;
@@ -33,7 +32,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-secondary);
+  background-color: #0b0f10;
   color: var(--text-primary);
   line-height: 1.6;
 }
@@ -46,10 +45,10 @@ body {
 
 /* Header Styles */
 .app-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: white;
-  padding: 2rem 0;
-  box-shadow: var(--shadow-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .header-content {
@@ -106,7 +105,7 @@ body {
 }
 
 .step-container {
-  background: var(--bg-primary);
+  background: #0b0f10;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
@@ -197,7 +196,7 @@ body {
   text-align: center;
   cursor: pointer;
   transition: var(--transition);
-  background: var(--bg-secondary);
+  background: #0b0f10;
 }
 
 .upload-area:hover,

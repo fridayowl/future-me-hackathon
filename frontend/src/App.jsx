@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import ProfileAnalysis from './components/profileAnalysis';
-import ChatInterface from './components/ChatInterface';
+import ChatInterface from './components/chatInterface';
 import PersonaSelector from './components/personaSelector';
 import { apiService } from './services/api';
 import './App.css';
@@ -62,13 +62,6 @@ function App() {
       {/* Header */}
       <header className="app-header">
         <div className="header-content">
-          <h1 className="app-title">
-            <span className="gradient-text">Future Me</span>
-          </h1>
-          <p className="app-subtitle">
-            Your AI-powered temporal financial advisor
-          </p>
-          
           {userProfile && (
             <button 
               onClick={resetToProfile}
@@ -88,14 +81,6 @@ function App() {
             <button onClick={() => setError(null)}>Dismiss</button>
           </div>
         )}
-
-        {isLoading && (
-          <div className="loading-overlay">
-            <div className="loading-spinner"></div>
-            <p>Analyzing your financial future...</p>
-          </div>
-        )}
-
         {currentStep === 'profile' && (
           <div className="step-container">
             <ProfileAnalysis 
