@@ -299,7 +299,7 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
     const presentNode = {
       id: 'present',
       type: 'presentMe',
-      position: { x: 300, y: 100 },
+      position: { x: 300, y: 50 },
       data: {
         humanDescription: {
           name: profileData.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
@@ -329,7 +329,7 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
           id: `future-${index}`,
           type: 'futureMe',
           position: { 
-            x: 100 + (index * 350), 
+            x: 100 + (index * 990), 
             y: 350 
           },
           data: {
@@ -445,104 +445,14 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
   return (
     <div style={{ width: '100%', height: '800px', position: 'relative' }}>
       {/* Header with controls */}
-      <div style={{
-        position: 'absolute',
-        top: '16px',
-        left: '16px',
-        right: '16px',
-        zIndex: 10,
-        background: 'linear-gradient(to right, #7c3aed, #2563eb)',
-        color: 'white',
-        padding: '16px',
-        borderRadius: '12px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-      }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
-            Your Financial Journey
-            {hasChanges && (
-              <span style={{ 
-                fontSize: '14px', 
-                backgroundColor: '#10b981', 
-                padding: '4px 8px', 
-                borderRadius: '12px',
-                marginLeft: '12px'
-              }}>
-                {appliedActions.length} Action{appliedActions.length !== 1 ? 's' : ''} Applied
-              </span>
-            )}
-          </h2>
-          <p style={{ margin: '4px 0 0 0', color: '#c4b5fd', fontSize: '14px' }}>
-            Interactive visualization of your present and future financial states
-          </p>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          {hasChanges && (
-            <button
-              onClick={resetProjections}
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-              }}
-            >
-              Reset Changes
-            </button>
-          )}
-          
-          {onStartConversation && (
-            <button
-              onClick={onStartConversation}
-              style={{
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#059669';
-                e.target.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = '#10b981';
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              💬 Talk to Future Me
-            </button>
-          )}
-        </div>
-      </div>
+      
 
       {/* React Flow */}
       <div style={{ 
         width: '100%', 
         height: '100%', 
-        paddingTop: '120px',
-        backgroundColor: '#f8fafc'
+        paddingTop: '20px',
+       
       }}>
         <ReactFlow
           nodes={nodes}

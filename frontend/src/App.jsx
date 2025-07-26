@@ -141,7 +141,7 @@ function App() {
 
         {/* NEW: Tables Step */}
         {currentStep === 'tables' && userProfile && (
-          <div className="tables-step">
+          <div className="tables-step" style={{ width: '100%', height: '100vh' }}  >
             <ProfileFlow profileData={userProfile} />
             
             {/* Action buttons */}

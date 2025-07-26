@@ -1434,18 +1434,15 @@ display: flex;
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 .tables-step {
-  min-height: 100vh;
-  padding-bottom: 100px; /* Space for fixed buttons */
+ 
 }
 
 .tables-actions button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  
 }
 
 .tables-actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  
 }
 
 /* Make sure the ProfileDataTables component has proper styling */
@@ -1456,7 +1453,7 @@ display: flex;
 .profile-summary {
   padding: 1.5rem;
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: white;
+  color: rgb(169, 209, 117);
 }
 
 .profile-summary h2 {
