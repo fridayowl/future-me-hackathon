@@ -2,7 +2,7 @@
 // src/components/BasicInfoTable.jsx
 import React from 'react';
 import './BasicInfoTable.css'; // Create this CSS file for styling
-
+ 
 const BasicInfoTable = ({ basicInfo }) => {
   if (!basicInfo) {
     return <p>No basic financial information available.</p>;
