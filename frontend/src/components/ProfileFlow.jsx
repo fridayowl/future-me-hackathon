@@ -427,12 +427,13 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
     return (
       <div style={{ 
         width: '100%', 
-        height: '400px', 
+        height: '80vh', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
         backgroundColor: '#f9fafb',
-        borderRadius: '12px'
+        borderRadius: '12px',
+        margin: '0 auto'
       }}>
         <div style={{ textAlign: 'center', color: '#6b7280' }}>
           <h3>No Profile Data Available</h3>
@@ -443,16 +444,19 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
   }
 
   return (
-    <div style={{ width: '100%', height: '800px', position: 'relative' }}>
+    <div style={{ 
+      width: '100%', 
+      height: '90vh', 
+      position: 'relative',
+      margin: '0 auto'
+    }}>
       {/* Header with controls */}
       
 
       {/* React Flow */}
       <div style={{ 
         width: '100%', 
-        height: '100%', 
-        paddingTop: '20px',
-       
+        height: '100%'
       }}>
         <ReactFlow
           nodes={nodes}
@@ -471,7 +475,7 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
             markerEnd: { type: MarkerType.Arrow }
           }}
           style={{
-            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+           
           }}
         />
       </div>
