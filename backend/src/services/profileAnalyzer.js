@@ -17,25 +17,25 @@ class ProfileAnalyzer {
   async analyzeHumanProfile(fiMCPData) {
     try {
       console.log('Starting profile analysis...');
-      
+
       // First, extract basic financial data
       const basicProfile = this.extractBasicFinancialData(fiMCPData);
-      
-      // Generate detailed human description using Gemini
+
+      // Generate detailed human description using Gemini, now targeting JSON output
       const humanDescription = await this.generateHumanDescription(basicProfile);
-      
-      // Analyze financial behavior patterns
+
+      // Analyze financial behavior patterns, targeting JSON output
       const behaviorAnalysis = await this.analyzeBehaviorPatterns(basicProfile);
-      
-      // Generate risk assessment
+
+      // Generate risk assessment, targeting JSON output
       const riskAssessment = await this.generateRiskAssessment(basicProfile);
-      
+
       // Create complete profile
       const completeProfile = {
         basicInfo: basicProfile,
-        humanDescription: humanDescription,
-        behaviorAnalysis: behaviorAnalysis,
-        riskAssessment: riskAssessment,
+        humanDescription: humanDescription, // This will now be a JSON object
+        behaviorAnalysis: behaviorAnalysis, // This will now be a JSON object
+        riskAssessment: riskAssessment,     // This will now be a JSON object
         generatedAt: new Date().toISOString()
       };
 
@@ -53,7 +53,7 @@ class ProfileAnalyzer {
    */
   extractBasicFinancialData(fiMCPData) {
     console.log('Extracting basic financial data...');
-    
+
     // Extract net worth
     const netWorthItem = fiMCPData.dataItems?.find(item => item.netWorthSummary);
     const netWorth = parseInt(netWorthItem?.netWorthSummary?.totalNetWorthValue?.units || "0");
@@ -79,6 +79,14 @@ class ProfileAnalyzer {
     const creditCards = activeAccounts.filter(acc => acc.portfolioType === "R");
     const loans = activeAccounts.filter(acc => acc.portfolioType === "I");
 
+    // Attempt to infer car/bike/home loans based on loan types.
+    // This is a simplification; a real system would need more detailed loan data.
+    // These accountType mappings are examples. Verify with your actual data.
+    const hasCarLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Auto Loan");
+    const hasBikeLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Two-Wheeler Loan");
+    const hasHomeLoan = loans.some(loan => this.getLoanType(loan.accountType) === "Home Loan");
+
+
     return {
       demographics: {
         estimatedAge: this.estimateAge(employmentInfo?.doj_epf),
@@ -87,7 +95,7 @@ class ProfileAnalyzer {
         joinDate: employmentInfo?.doj_epf,
         currentDate: new Date().toISOString().split('T')[0]
       },
-      
+
       financialSummary: {
         netWorth: netWorth,
         liquidSavings: savingsAmount,
@@ -102,7 +110,10 @@ class ProfileAnalyzer {
         closedAccounts: closedAccounts.length,
         creditCards: this.processCreditCards(creditCards),
         loans: this.processLoans(loans),
-        paymentHistory: this.analyzePaymentHistory(accounts)
+        paymentHistory: this.analyzePaymentHistory(accounts),
+        hasCarLoan: hasCarLoan,
+        hasBikeLoan: hasBikeLoan,
+        hasHomeLoan: hasHomeLoan,
       },
 
       employmentProfile: {
@@ -119,11 +130,73 @@ class ProfileAnalyzer {
   }
 
   /**
+   * Safely parse JSON output from Gemini, removing potential markdown fences.
+   * @param {string} text - The raw text response from Gemini.
+   * @returns {Object} Parsed JSON object.
+   */
+  safeParseGeminiJson(text) {
+    // Remove markdown code block fences and "json" keyword if present
+    const cleanedText = text.replace(/```json\s*|\s*```/g, '').trim();
+    try {
+      return JSON.parse(cleanedText);
+    } catch (error) {
+      console.error("Failed to parse JSON from Gemini. Cleaned text:", cleanedText);
+      throw error;
+    }
+  }
+
+  /**
    * Generate detailed human description using Gemini AI
+   * Now outputs a JSON object based on a defined schema.
    */
   async generateHumanDescription(basicProfile) {
     const prompt = `
-    Analyze this person's financial profile and create a detailed human description:
+    Analyze this person's financial profile and create a detailed human description.
+    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \`\`\`json).**
+
+    The JSON output must strictly adhere to the following schema:
+    {
+      "name": "string",
+      "age": "number",
+      "lifeStage": "string",
+      "netWorth": "number",
+      "totalLiability": "number",
+      "creditScore": "number",
+      "employment": {
+        "currentEmployer": "string",
+        "workExperienceYears": "number",
+        "careerTrajectory": "string"
+      },
+      "metroPolitanOrCity": "string",
+      "loans": {
+        "hasCarLoan": "boolean",
+        "hasBikeLoan": "boolean",
+        "hasHomeLoan": "boolean",
+        "otherLoans": "array"
+      },
+      "financialPersonality": {
+        "riskTolerance": "string",
+        "spendingHabits": "string",
+        "financialDisciplineLevel": "string"
+      },
+      "financialStressLevels": "string",
+      "financialGoals": {
+        "shortTerm": "array",
+        "longTerm": "array"
+      },
+      "behavioralInsights": {
+        "decisionMakingPatterns": "string",
+        "financialLiteracyLevel": "string"
+      },
+      "socioEconomicStatus": {
+        "economicClass": "string",
+        "familyResponsibilities": "string",
+        "lifestyleChoices": "string"
+      },
+      "summary": "string"
+    }
+
+    Based on the following data:
 
     DEMOGRAPHICS:
     - Estimated Age: ${basicProfile.demographics.estimatedAge} years
@@ -143,34 +216,48 @@ class ProfileAnalyzer {
     - Active Accounts: ${basicProfile.creditProfile.activeAccounts}
     - Credit Cards: ${basicProfile.creditProfile.creditCards.length}
     - Loans: ${basicProfile.creditProfile.loans.length}
+    - Has Car Loan: ${basicProfile.creditProfile.hasCarLoan}
+    - Has Bike Loan: ${basicProfile.creditProfile.hasBikeLoan}
+    - Has Home Loan: ${basicProfile.creditProfile.hasHomeLoan}
 
     EMPLOYMENT:
     - EPF Balance: ₹${basicProfile.employmentProfile.pensionBalance?.toLocaleString() || '0'}
     - Total EPF Contributions: ₹${(basicProfile.employmentProfile.employeeContribution + basicProfile.employmentProfile.employerContribution)?.toLocaleString() || '0'}
 
-    Create a detailed human profile including:
-    1. LIFE STAGE & LIFESTYLE: Describe their current life phase, likely lifestyle, and spending patterns
-    2. FINANCIAL PERSONALITY: Risk tolerance, spending habits, financial discipline level
-    3. CAREER SITUATION: Professional status, income estimation, career trajectory
-    4. FINANCIAL STRESS LEVELS: Current financial pressures and concerns
-    5. FINANCIAL GOALS: Likely short-term and long-term financial aspirations
-    6. BEHAVIORAL INSIGHTS: Decision-making patterns, financial literacy level
-    7. SOCIAL ECONOMIC STATUS: Economic class, family responsibilities, lifestyle choices
-
-    Be specific, empathetic, and realistic. Use the data to paint a complete picture of this person's financial life.
+    Infer "metroPolitanOrCity" based on the general context of Fi Money users (e.g., "Major Indian Metro City" or "Tier 2 Indian City").
+    For "name", use a placeholder like "Individual X".
+    For "lifeStage", categorize them based on age and financial situation (e.g., "Early Career Professional", "Mid-Career with Growing Family", "Pre-Retirement"). Use the getLifeStage helper function for this.
+    Provide a concise "summary" of the profile.
     `;
 
-    const result = await this.model.generateContent(prompt);
+    const result = await this.model.generateContent(prompt, {
+      responseMimeType: 'application/json' // Crucial for JSON output
+    });
     const response = await result.response;
-    return response.text();
+    return this.safeParseGeminiJson(response.text()); // Use the safe parsing method
   }
 
   /**
    * Analyze financial behavior patterns using Gemini AI
+   * Now outputs a JSON object.
    */
   async analyzeBehaviorPatterns(basicProfile) {
     const prompt = `
-    Analyze the financial behavior patterns of this person:
+    Analyze the financial behavior patterns of this person.
+    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \`\`\`json).**
+
+    The JSON output must strictly adhere to the following schema:
+    {
+      "creditManagementStyle": "string",
+      "savingsBehavior": "string",
+      "spendingPatterns": "string",
+      "riskTakingBehavior": "string",
+      "financialDiscipline": "string",
+      "debtStrategy": "string",
+      "investmentMindset": "string"
+    }
+
+    Based on the following data:
 
     CREDIT BEHAVIOR:
     - Credit Score: ${basicProfile.financialSummary.creditScore} (${this.getCreditScoreCategory(basicProfile.financialSummary.creditScore)})
@@ -178,78 +265,140 @@ class ProfileAnalyzer {
     - Closed Accounts: ${basicProfile.creditProfile.closedAccounts}
     - Current Debt: ₹${basicProfile.financialSummary.totalDebt.toLocaleString()}
     - Liquid Savings: ₹${basicProfile.financialSummary.liquidSavings.toLocaleString()}
+    - Debt-to-Savings Ratio: ${basicProfile.financialSummary.debtToSavingsRatio}
+    - Payment History Overall Rating: ${basicProfile.creditProfile.paymentHistory.overallRating}
 
     EMPLOYMENT STABILITY:
     - Current Job Duration: ${basicProfile.demographics.workExperience} years
     - Employer: ${basicProfile.demographics.employer}
 
-    Provide detailed analysis of:
-    1. CREDIT MANAGEMENT STYLE: How they handle credit and debt
-    2. SAVINGS BEHAVIOR: Their approach to building wealth and emergency funds
-    3. SPENDING PATTERNS: Likely spending habits and financial priorities
-    4. RISK TAKING BEHAVIOR: Conservative vs aggressive financial decisions
-    5. FINANCIAL DISCIPLINE: Level of self-control and planning
-    6. DEBT STRATEGY: How they approach borrowing and repayment
-    7. INVESTMENT MINDSET: Likely investment preferences and risk appetite
-
-    Be analytical and provide specific insights based on the financial data patterns.
+    Provide specific, analytical insights for each field.
     `;
 
-    const result = await this.model.generateContent(prompt);
+    const result = await this.model.generateContent(prompt, {
+      responseMimeType: 'application/json'
+    });
     const response = await result.response;
-    return response.text();
+    return this.safeParseGeminiJson(response.text());
   }
 
   /**
    * Generate comprehensive risk assessment using Gemini AI
+   * Now outputs a JSON object.
    */
   async generateRiskAssessment(basicProfile) {
     const prompt = `
-    Provide a comprehensive financial risk assessment for this individual:
+    Provide a comprehensive financial risk assessment for this individual.
+    **Generate ONLY the JSON object, without any markdown code blocks (e.g., \`\`\`json).**
+
+    The JSON output must strictly adhere to the following schema:
+    {
+      "financialHealthScore": {
+        "score": "number",
+        "explanation": "string"
+      },
+      "redFlags": "array",
+      "immediateRisks": "array",
+      "mediumTermRisks": "array",
+      "longTermRisks": "array",
+      "opportunityCosts": "array",
+      "riskMitigationStrategies": "array"
+    }
+
+    Based on the following data:
 
     FINANCIAL HEALTH INDICATORS:
     - Net Worth: ₹${basicProfile.financialSummary.netWorth.toLocaleString()}
     - Debt-to-Savings Ratio: ${basicProfile.financialSummary.debtToSavingsRatio}
-    - Credit Score: ${basicProfile.financialSummary.creditScore}
+    - Credit Score: ${basicProfile.financialSummary.creditScore} (${this.getCreditScoreCategory(basicProfile.financialSummary.creditScore)})
     - Employment Stability: ${basicProfile.demographics.workExperience} years with current employer
     - Active Credit Accounts: ${basicProfile.creditProfile.activeAccounts}
+    - Total Debt: ₹${basicProfile.financialSummary.totalDebt.toLocaleString()}
+    - Liquid Savings: ₹${basicProfile.financialSummary.liquidSavings.toLocaleString()}
 
     CREDIT UTILIZATION:
-    ${basicProfile.creditProfile.creditCards.map(card => 
+    ${basicProfile.creditProfile.creditCards.map(card =>
       `- ${card.bank}: ₹${card.outstanding.toLocaleString()} / ₹${card.limit.toLocaleString()} (${card.utilization}%)`
     ).join('\n')}
 
-    Analyze and provide:
-    1. IMMEDIATE RISKS: Critical financial risks requiring urgent attention
-    2. MEDIUM-TERM RISKS: Potential problems in 1-3 years if current patterns continue
-    3. LONG-TERM RISKS: Retirement and wealth-building concerns
-    4. OPPORTUNITY COSTS: What they're missing by current financial choices
-    5. RISK MITIGATION STRATEGIES: Specific actionable steps to reduce risks
-    6. FINANCIAL HEALTH SCORE: Overall rating from 1-10 with explanation
-    7. RED FLAGS: Warning signs that need immediate attention
-
-    Be specific, actionable, and prioritize risks by urgency and impact.
+    Analyze and provide specific, actionable insights for each field. For "redFlags", list any critical warning signs. For arrays, list distinct points.
     `;
 
-    const result = await this.model.generateContent(prompt);
+    const result = await this.model.generateContent(prompt, {
+      responseMimeType: 'application/json'
+    });
     const response = await result.response;
-    return response.text();
+    return this.safeParseGeminiJson(response.text());
   }
 
   // Helper methods
+  /**
+   * Estimates age based on date of joining, assuming a typical starting work age.
+   * @param {string} joinDate - Date of joining EPF in 'YYYY-MM-DD' format.
+   * @returns {number} Estimated age in years.
+   */
   estimateAge(joinDate) {
-    if (!joinDate) return 26; // Default
-    const joinYear = parseInt(joinDate.split('-')[2]);
-    const currentYear = new Date().getFullYear();
-    const workingYears = currentYear - joinYear;
-    return 22 + workingYears; // Assuming started working at 22
+    if (!joinDate) return 26; // Default age if no join date
+
+    const doj = new Date(joinDate); // Directly parse 'YYYY-MM-DD'
+    if (isNaN(doj.getTime())) { // Check if date parsing was successful
+      console.warn(`Invalid joinDate format: ${joinDate}. Defaulting age.`);
+      return 26;
+    }
+
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const joinYear = doj.getFullYear();
+
+    let workingYears = currentYear - joinYear;
+
+    // Adjust working years if birthday/anniversary for current year hasn't passed yet
+    if (today.getMonth() < doj.getMonth() || (today.getMonth() === doj.getMonth() && today.getDate() < doj.getDate())) {
+      workingYears--;
+    }
+
+    const assumedStartWorkingAge = 22; // A common age for starting professional work after graduation
+
+    // Calculate estimated age, ensuring it's not impossibly low or high
+    let estimatedAge = assumedStartWorkingAge + workingYears;
+
+    // Add some sanity checks:
+    if (estimatedAge < 18) return 22; // Minimum reasonable working age
+    if (estimatedAge > 70) return 60; // Max reasonable working age (e.g., if data is very old)
+
+    return estimatedAge;
   }
 
+  /**
+   * Calculates work experience in years from date of joining.
+   * @param {string} joinDate - Date of joining EPF in 'YYYY-MM-DD' format.
+   * @returns {number} Work experience in years (can be fractional).
+   */
   calculateWorkExperience(joinDate) {
     if (!joinDate) return 0;
-    const joinYear = parseInt(joinDate.split('-')[2]);
-    const currentYear = new Date().getFullYear();
-    return currentYear - joinYear;
+
+    const doj = new Date(joinDate); // Directly parse 'YYYY-MM-DD'
+    if (isNaN(doj.getTime())) { // Check if date parsing was successful
+      console.warn(`Invalid joinDate format: ${joinDate}. Returning 0 work experience.`);
+      return 0;
+    }
+
+    const today = new Date();
+
+    let years = today.getFullYear() - doj.getFullYear();
+    let months = today.getMonth() - doj.getMonth();
+    let days = today.getDate() - doj.getDate();
+
+    // Adjust for negative months or days
+    if (months < 0 || (months === 0 && days < 0)) {
+      years--;
+      if (months < 0) {
+        months += 12; // Add 12 months to get positive value
+      }
+    }
+
+    // Convert total experience to a fractional year
+    return years + (months / 12) + (days / 365.25); // Approximately
   }
 
   processCreditCards(creditCards) {
@@ -275,47 +424,72 @@ class ProfileAnalyzer {
 
   analyzePaymentHistory(accounts) {
     const totalAccounts = accounts.length;
-    const defaultAccounts = accounts.filter(acc => acc.paymentRating > 0).length;
-    const onTimePercentage = ((totalAccounts - defaultAccounts) / totalAccounts * 100).toFixed(1);
-    
+    // Payment rating > 0 typically indicates some form of delinquency or default.
+    // Assuming '0' means on-time or no negative history.
+    const defaultAccounts = accounts.filter(acc => parseInt(acc.paymentRating || "0") > 0).length;
+    const onTimePercentage = totalAccounts > 0 ? ((totalAccounts - defaultAccounts) / totalAccounts * 100).toFixed(1) : "100.0";
+
     return {
       totalAccounts,
       defaultAccounts,
-      onTimePaymentPercentage: onTimePercentage,
-      overallRating: onTimePercentage > 95 ? "Excellent" : onTimePercentage > 85 ? "Good" : "Needs Improvement"
+      onTimePaymentPercentage: parseFloat(onTimePercentage),
+      overallRating: parseFloat(onTimePercentage) > 95 ? "Excellent" : parseFloat(onTimePercentage) > 85 ? "Good" : "Needs Improvement"
     };
   }
 
   getBankName(subscriberName) {
     const bankMappings = {
-      "HDFC Bank Ltd": "HDFC Bank",
-      "Federal Bank": "Federal Bank", 
+      "HDFC BANK LTD": "HDFC Bank",
+      "FEDERAL BANK LIMITED": "Federal Bank",
       "IDFC FIRST BANK LIMITED": "IDFC First Bank",
-      "Karur Vysya Bank Ltd": "Karur Vysya Bank"
+      "KARUR VYSYA BANK LIMITED": "Karur Vysya Bank",
+      "ICICI BANK LIMITED": "ICICI Bank",
+      "STATE BANK OF INDIA": "State Bank of India",
+      "AXIS BANK LIMITED": "Axis Bank",
+      "KOTAK MAHINDRA BANK LIMITED": "Kotak Mahindra Bank",
+      "PUNJAB NATIONAL BANK": "Punjab National Bank",
+      "CANARA BANK": "Canara Bank",
+      // Add more mappings as needed
     };
-    return bankMappings[subscriberName] || subscriberName;
+    // Normalize input to upper case for better matching if source data varies
+    const normalizedName = subscriberName.toUpperCase();
+    for (const key in bankMappings) {
+        if (normalizedName.includes(key)) { // Use .includes for partial matches like "HDFC BANK LTD" vs "HDFC Bank"
+            return bankMappings[key];
+        }
+    }
+    return subscriberName; // Return original if no specific mapping found
   }
 
   getLoanType(accountType) {
     const loanTypes = {
       "00": "Other",
+      "01": "Home Loan",
+      "02": "Auto Loan",
       "05": "Personal Loan",
       "06": "Consumer Loan",
+      "07": "Two-Wheeler Loan",
       "10": "Credit Card"
     };
     return loanTypes[accountType] || "Unknown";
   }
 
   calculateUtilization(current, limit) {
-    if (!limit || limit === "0") return 0;
+    if (!limit || parseInt(limit) === 0) return 0;
     return Math.round((parseInt(current || "0") / parseInt(limit)) * 100);
   }
 
   calculateAccountAge(openDate) {
     if (!openDate) return 0;
-    const openYear = parseInt(openDate.substring(0, 4));
-    const currentYear = new Date().getFullYear();
-    return currentYear - openYear;
+    const openDateObj = new Date(openDate); // Directly parse 'YYYY-MM-DD'
+    if (isNaN(openDateObj.getTime())) {
+      console.warn(`Invalid openDate format: ${openDate}. Returning 0 account age.`);
+      return 0;
+    }
+    const currentDateObj = new Date();
+    const diffTime = Math.abs(currentDateObj.getTime() - openDateObj.getTime());
+    const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+    return diffYears;
   }
 
   getCreditScoreCategory(score) {
@@ -323,6 +497,16 @@ class ProfileAnalyzer {
     if (score >= 700) return "Good";
     if (score >= 650) return "Fair";
     return "Poor";
+  }
+
+  // Helper to determine life stage based on age (can be expanded)
+  getLifeStage(age) {
+    if (age >= 18 && age <= 25) return "Early Career Professional/Young Adult";
+    if (age > 25 && age <= 35) return "Mid-Career Professional/Young Family";
+    if (age > 35 && age <= 50) return "Established Professional/Growing Family";
+    if (age > 50 && age <= 65) return "Pre-Retirement/Seasoned Professional";
+    if (age > 65) return "Retired/Senior Citizen";
+    return "Unknown"; // For ages outside typical working range or if age is not estimable
   }
 }
 
