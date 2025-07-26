@@ -4,10 +4,12 @@
 import React, { useState } from "react";
 import ProfileAnalysis from "./components/profileAnalysis";
 import ChatInterface from "./components/ChatInterface";
+import ProfileSummary from "./components/ProfileSummary";
 import PersonaSelector from "./components/personaSelector";
 import { apiService } from "./services/api";
 import { useRef } from "react";
-import { Upload } from "lucide-react";
+import { Upload as UploadIcon } from "lucide-react";
+import Upload from "./components/Upload";
 import "./App.css";
 
 function App() {
@@ -91,29 +93,11 @@ function App() {
           )}
         </div>
       </header>
-      <div className="sample-section">
-        <div className="sample-section">
-          <button
-            className="sample-button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-          >
-            <Upload size={20} />
-            Upload Fi data
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".txt"
-            onChange={handleFileInput}
-            style={{ display: "none" }}
-          />
-
-          <p className="sample-description">
-            Use our sample profile to see Future Me in action
-          </p>
-        </div>
-      </div>
+      <Upload
+        fileInputRef={fileInputRef}
+        isLoading={isLoading}
+        handleFileInput={handleFileInput}
+      />
       {/* Main Content */}
       <main className="app-main">
         {error && (
@@ -135,49 +119,17 @@ function App() {
         {currentStep === "chat" && userProfile && (
           <div className="step-container chat-container">
             {/* Profile Summary */}
-            <div className="profile-summary">
-              <h2>Your Financial Profile</h2>
-              <div className="profile-stats">
-                <div className="stat">
-                  <span className="stat-label">Age</span>
-                  <span className="stat-value">
-                    {userProfile.demographics?.estimatedAge || "Unknown"}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Credit Score</span>
-                  <span className="stat-value">
-                    {userProfile.financialSummary?.creditScore || "N/A"}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Net Worth</span>
-                  <span className="stat-value">
-                    ₹
-                    {userProfile.financialSummary?.netWorth?.toLocaleString() ||
-                      "0"}
-                  </span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Total Debt</span>
-                  <span className="stat-value">
-                    ₹
-                    {userProfile.financialSummary?.totalDebt?.toLocaleString() ||
-                      "0"}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <ProfileSummary userProfile={userProfile} />
 
             {/* Persona Selector */}
-            <PersonaSelector
+            {/* <PersonaSelector
               currentAge={userProfile.demographics?.estimatedAge || 26}
               selectedAge={selectedPersona.age}
               onAgeSelect={(age) =>
                 setSelectedPersona({ age, characteristics: null })
               }
               userProfile={userProfile}
-            />
+            /> */}
 
             {/* Chat Interface */}
               <ChatInterface
