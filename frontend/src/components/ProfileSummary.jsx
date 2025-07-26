@@ -1,7 +1,10 @@
 // frontend/src/components/ProfileAnalysis.jsx
 // Component for uploading and analyzing Fi MCP data
 
-const ProfileSummary = ({ humanDescription }) => {
+
+// React Flow custom node: expects a 'data' prop
+const ProfileSummary = ({ data }) => {
+  const humanDescription = data?.humanDescription;
   if (!humanDescription) return null;
   const {
     name,

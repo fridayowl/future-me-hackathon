@@ -1,7 +1,7 @@
 // frontend/src/App.jsx
 // Main React application for Future Me frontend
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import ProfileAnalysis from "./components/profileAnalysis";
 import ChatInterface from "./components/ChatInterface";
 import ProfileSummary from "./components/ProfileSummary";
@@ -11,8 +11,61 @@ import { useRef } from "react";
 import { Upload as UploadIcon } from "lucide-react";
 import Upload from "./components/Upload";
 import "./App.css";
+import {
+  ReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+} from "@xyflow/react";
+const nodeTypes = {
+  profileSummary: ProfileSummary,
+};
+
+const initialNodes = [
+  {
+    id: "n1",
+    type: 'profileSummary',
+    position: { x: 0, y: 0 },
+    data: {
+      humanDescription: {
+        name: "Individual X",
+        age: 28,
+        lifeStage: "Early Career Professional",
+        netWorth: 3148,
+        totalLiability: 50077,
+        creditScore: 758,
+        employment: {
+          currentEmployer: "SIMPLY VYAPAR APPS PRIVATE LIMITED",
+          workExperienceYears: 6.57,
+          careerTrajectory: "Early Career",
+        },
+      },
+    },
+  },
+  { id: "n2", position: { x: 0, y: 100 }, data: { label: "Node 2" } },
+];
+
+const initialEdges = [{ id: "n1-n2", source: "n1", target: "n2" }];
+
+import "@xyflow/react/dist/style.css";
 
 function App() {
+  const [nodes, setNodes] = useState(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
+  const onNodesChange = useCallback(
+    (changes) =>
+      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
+    []
+  );
+  const onEdgesChange = useCallback(
+    (changes) =>
+      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
+    []
+  );
+  const onConnect = useCallback(
+    (params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
+    []
+  );
   const fileInputRef = useRef();
   const [currentStep, setCurrentStep] = useState("profile"); // 'profile', 'chat'
   const [userProfile, setUserProfile] = useState(null);
@@ -129,21 +182,18 @@ function App() {
         {currentStep === "chat" && userProfile && (
           <div className="step-container chat-container">
             {/* Profile Summary */}
-            <ProfileSummary
-              humanDescription={{
-                name: "Individual X",
-                age: 28,
-                lifeStage: "Early Career Professional",
-                netWorth: 3148,
-                totalLiability: 50077,
-                creditScore: 758,
-                employment: {
-                  currentEmployer: "SIMPLY VYAPAR APPS PRIVATE LIMITED",
-                  workExperienceYears: 6.57,
-                  careerTrajectory: "Early Career",
-                },
-              }}
-            />
+            <div className="h-96 w-screen">
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+              />
+            </div>
+
+            {/* ProfileSummary is now rendered as a custom node in ReactFlow */}
 
             {/* Persona Selector */}
             {/* <PersonaSelector
