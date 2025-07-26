@@ -7,7 +7,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const [error, setError] = useState(null);
   const [mcpServerHealth, setMcpServerHealth] = useState(null);
   const [userCredentials, setUserCredentials] = useState({
-    userId: 'demo_user', // Default for testing
+    userId: '9999999999', // Default for testing
     authToken: 'demo_token' // Default for testing
   });
 

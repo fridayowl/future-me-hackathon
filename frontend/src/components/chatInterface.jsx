@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // frontend/src/components/ChatInterface.jsx
 // Main chat interface for conversations with Future Me
 
