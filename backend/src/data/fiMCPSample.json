@@ -1,0 +1,181 @@
+{
+  "networthDataDescription": "A financial portfolio management file that provides secure access to users' financial data through Fi Money",
+  "dataItems": [
+    {
+      "componentDescription": "Calculate comprehensive net worth using ONLY actual data from accounts users connected on Fi Money",
+      "netWorthSummary": {
+        "assetValues": [
+          {
+            "netWorthAttribute": "ASSET_TYPE_SAVINGS_ACCOUNTS",
+            "value": {
+              "currencyCode": "INR",
+              "units": "3148"
+            }
+          }
+        ],
+        "totalNetWorthValue": {
+          "currencyCode": "INR",
+          "units": "3148"
+        }
+      }
+    },
+    {
+      "componentDescription": "Calculate comprehensive mutual fund holdings",
+      "mutualFundAnalytics": {}
+    },
+    {
+      "componentDescription": "Calculate comprehensive data from accounts users connected on Fi Money",
+      "connectedAccountDetails": {}
+    },
+    {
+      "componentDescription": "Retrieve detailed transaction history from accounts connected to Fi Money platform",
+      "mfTransactionsResponse": {
+        "schemaDescription": "A list of mutual fund investments. We currently support 500 transactions across all mutual funds"
+      }
+    },
+    {
+      "componentDescription": "Retrieve detailed EPF (Employee Provident Fund) account information",
+      "epfAccountData": {
+        "uanAccounts": [
+          {
+            "phoneNumber": {},
+            "rawDetails": {
+              "est_details": [
+                {
+                  "est_name": "SIMPLY VYAPAR APPS PRIVATE LIMITED",
+                  "member_id": "PYBOM17643350000010030",
+                  "office": "(SRO)BOMMASANDRA",
+                  "doj_epf": "01-02-2019",
+                  "doe_epf": "29-03-2025",
+                  "doe_eps": "29-03-2025",
+                  "pf_balance": {
+                    "is_pf_full_withdrawn": true,
+                    "employee_share": {
+                      "debit": "26485",
+                      "credit": "26485"
+                    },
+                    "employer_share": {
+                      "debit": "8093",
+                      "credit": "8093"
+                    }
+                  }
+                }
+              ],
+              "overall_pf_balance": {
+                "pension_balance": "14892",
+                "employee_share_total": {
+                  "debit": "26485",
+                  "credit": "26485"
+                },
+                "employer_share_total": {
+                  "debit": "8093",
+                  "credit": "8093"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentDescription": "Retrieve comprehensive credit report including scores, active loans, credit card utilization",
+      "creditReportData": {
+        "creditReports": [
+          {
+            "creditReportData": {
+              "userMessage": {
+                "userMessageText": "Normal Response"
+              },
+              "creditProfileHeader": {
+                "reportDate": "20250705",
+                "reportTime": "194524"
+              },
+              "creditAccount": {
+                "creditAccountSummary": {
+                  "account": {
+                    "creditAccountTotal": "13",
+                    "creditAccountActive": "6",
+                    "creditAccountDefault": "0",
+                    "creditAccountClosed": "7"
+                  },
+                  "totalOutstandingBalance": {
+                    "outstandingBalanceSecured": "0",
+                    "outstandingBalanceUnSecured": "50077",
+                    "outstandingBalanceAll": "50077"
+                  }
+                },
+                "creditAccountDetails": [
+                  {
+                    "identificationNumber": "PVT3180002",
+                    "subscriberName": "Federal Bank",
+                    "portfolioType": "R",
+                    "accountType": "10",
+                    "openDate": "20240827",
+                    "creditLimitAmount": "56000",
+                    "highestCreditOrOriginalLoanAmount": "30671",
+                    "accountStatus": "11",
+                    "paymentRating": "0",
+                    "currentBalance": "40415",
+                    "amountPastDue": "0",
+                    "dateReported": "20250615",
+                    "dateOfLastPayment": "20250604"
+                  },
+                  {
+                    "identificationNumber": "PVT3080001",
+                    "subscriberName": "HDFC Bank Ltd",
+                    "portfolioType": "R",
+                    "accountType": "10",
+                    "openDate": "20250226",
+                    "creditLimitAmount": "44000",
+                    "highestCreditOrOriginalLoanAmount": "29383",
+                    "accountStatus": "11",
+                    "paymentRating": "0",
+                    "currentBalance": "9662",
+                    "amountPastDue": "0",
+                    "dateReported": "20250430",
+                    "dateOfLastPayment": "20250401"
+                  },
+                  {
+                    "identificationNumber": "PVT3360001",
+                    "subscriberName": "IDFC FIRST BANK LIMITED",
+                    "portfolioType": "R",
+                    "accountType": "10",
+                    "openDate": "20250604",
+                    "creditLimitAmount": "120000",
+                    "highestCreditOrOriginalLoanAmount": "0",
+                    "accountStatus": "11",
+                    "paymentRating": "0",
+                    "currentBalance": "0",
+                    "amountPastDue": "0",
+                    "dateReported": "20250615"
+                  },
+                  {
+                    "identificationNumber": "NBF9470001",
+                    "subscriberName": "Aditya Birla Capital Ltd",
+                    "portfolioType": "I",
+                    "accountType": "05",
+                    "openDate": "20220309",
+                    "highestCreditOrOriginalLoanAmount": "69798",
+                    "accountStatus": "13",
+                    "paymentRating": "0",
+                    "currentBalance": "0",
+                    "amountPastDue": "0",
+                    "dateReported": "20241215",
+                    "dateClosed": "20230522"
+                  }
+                ]
+              },
+              "score": {
+                "bureauScore": "758"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "componentDescription": "Retrieve details of manually connected assets on fi app",
+      "investmentDeclarations": {}
+    }
+  ]
+}
