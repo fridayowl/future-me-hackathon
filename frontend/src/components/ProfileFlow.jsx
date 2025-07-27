@@ -316,7 +316,7 @@ const onInit = (instance) => {
     const presentNode = {
       id: 'present',
       type: 'presentMe',
-      position: { x: 2700, y: -500 },
+      position: { x: 3500, y: -500 },
       data: {
         humanDescription: {
           name: profileData.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
@@ -346,7 +346,7 @@ const onInit = (instance) => {
           id: `future-${index}`,
           type: 'futureMe',
           position: { 
-            x: 650 + (index * 990), 
+            x: 1500 + (index * 990), 
             y: 20 
           },
           data: {
