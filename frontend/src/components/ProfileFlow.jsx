@@ -316,7 +316,7 @@ const onInit = (instance) => {
     const presentNode = {
       id: 'present',
       type: 'presentMe',
-      position: { x: 2800, y: -650 },
+      position: { x: 2700, y: -500 },
       data: {
         humanDescription: {
           name: profileData.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
@@ -482,8 +482,8 @@ const onInit = (instance) => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-        nodesDraggable={false}  
-          
+         nodesDraggable={false}  
+           panOnDrag={false}  
           fitView
           fitViewOptions={{
             padding: 0.1,

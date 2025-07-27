@@ -782,7 +782,7 @@ const styles = {
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
     borderRadius: '16px',
-    display: 'flex',
+    display: 'flex', 
     flexDirection: 'column',
     height: '600px', // Keep chat panel height consistent
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
