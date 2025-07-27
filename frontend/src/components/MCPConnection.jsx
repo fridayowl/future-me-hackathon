@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Shield, Database, AlertCircle, CheckCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
@@ -77,11 +78,18 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const analyzeFinancialData = async () => {
     try {
       setError(null);
-
-      const { apiService } = await import('../services/api');
-      const response = await apiService.analyzeMCPData(sessionId);
-
-      onAnalyzeProfile(response.profile);
+      toast.promise(
+        async () => {
+          const { apiService } = await import('../services/api');
+          const response = await apiService.analyzeMCPData(sessionId);
+          onAnalyzeProfile(response.profile);
+        },
+        {
+          pending: 'Analyzing...',
+          success: 'Analysis complete!',
+          error: 'Analysis failed'
+        }
+      );
 
     } catch (err) {
       setError(`Analysis failed: ${err.message}`);
