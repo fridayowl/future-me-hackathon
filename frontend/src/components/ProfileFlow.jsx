@@ -31,7 +31,7 @@ const reactFlowInstanceRef = useRef(null);
 
 const onInit = (instance) => {
   reactFlowInstanceRef.current = instance;
-  instance.setViewport({ x: 0, y: 0, zoom:0.05 }, { duration: 800 });
+  instance.setViewport({ x: 0, y: 100, zoom:0.2 }, { duration: 800 });
 };
   // Enhanced financial action calculator
   const calculateFinancialImpact = useCallback((actionType, actionData, currentProfile) => {
@@ -306,7 +306,7 @@ const onInit = (instance) => {
     const presentNode = {
       id: 'present',
       type: 'presentMe',
-      position: { x: 2800, y: -800 },
+      position: { x: 2800, y: -650 },
       data: {
         humanDescription: {
           name: profileData.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
@@ -336,7 +336,7 @@ const onInit = (instance) => {
           id: `future-${index}`,
           type: 'futureMe',
           position: { 
-            x: 300 + (index * 990), 
+            x: 650 + (index * 990), 
             y: 20 
           },
           data: {
@@ -472,8 +472,8 @@ const onInit = (instance) => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-        nod esDraggable={false}  
-           onInit={onInit}     
+        nodesDraggable={false}  
+          
           fitView
           fitViewOptions={{
             padding: 0.1,

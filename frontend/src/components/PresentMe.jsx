@@ -5,7 +5,7 @@ import { MessageCircle, Send, Sparkles, TrendingUp, Target, Heart, Book, Lightbu
 
 export default function PresentMe({ data }) {
   console.log('PresentMe data:', data);
-  
+
   const [showActions, setShowActions] = useState(true);
   const [activeAction, setActiveAction] = useState(null);
   const [actionData, setActionData] = useState({
@@ -18,7 +18,7 @@ export default function PresentMe({ data }) {
   });
 
   // Chat state
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -104,10 +104,10 @@ export default function PresentMe({ data }) {
         data: actionData,
         timestamp: new Date().toISOString()
       };
-      
+
       // Calculate projected impact based on action type
       let projectedImpact = {};
-      
+
       switch (actionType) {
         case 'start_sip':
           projectedImpact = calculateSIPImpact(actionData.sipAmount, actionData.sipDuration);
@@ -121,7 +121,7 @@ export default function PresentMe({ data }) {
         default:
           break;
       }
-      
+
       onFinancialAction(actionType, { ...actionData, projectedImpact });
     }
     setActiveAction(null);
@@ -132,7 +132,7 @@ export default function PresentMe({ data }) {
   const handleTemplateClick = (template) => {
     setSelectedTemplate(template);
     setInputMessage(template.prompt);
-    
+
     // Auto-send the template message
     handleSendMessage(template.prompt);
   };
@@ -169,11 +169,11 @@ export default function PresentMe({ data }) {
     const userAge = userData.age || 25;
     const netWorthValue = userData.netWorth || 0;
     const creditScoreValue = userData.creditScore || 'N/A';
-    
+
     if (prompt.includes('make future better')) {
       return `Hi ${userName}! Based on your current profile, here are 3 key areas to focus on:
 
-**1. Emergency Fund Building** 
+**1. Emergency Fund Building**
 With your current net worth of ${formatCurrency(netWorthValue)}, aim to build a 6-month emergency fund. Even ₹5,000/month can create a solid safety net.
 
 **2. Investment Diversification**
@@ -184,9 +184,9 @@ Your current credit score is ${creditScoreValue}. ${creditScoreValue > 750 ? 'Gr
 
 Which area interests you most?`;
     }
-    
+
     if (prompt.includes('goals and dreams')) {
-      return `${userName}, let's map out your financial journey! 
+      return `${userName}, let's map out your financial journey!
 
 At ${userAge}, you're at a great stage to build wealth. With your current net worth of ${formatCurrency(netWorthValue)}, let's explore:
 
@@ -200,7 +200,7 @@ Your current financial foundation gives us a good starting point. What's the one
 
     if (prompt.includes('financial health')) {
       const debtRatio = totalLiability && netWorthValue ? ((totalLiability / netWorthValue) * 100).toFixed(1) : 'N/A';
-      
+
       return `${userName}, here's your honest financial health assessment:
 
 **✅ Strengths:**
@@ -238,14 +238,14 @@ What would you like to dive deeper into?`;
   const calculateSIPImpact = (monthlyAmount, durationMonths) => {
     const annualReturn = 0.12; // 12% expected annual return
     const monthlyReturn = annualReturn / 12;
-    
+
     // Future value of SIP calculation
-    const futureValue = monthlyAmount * 
+    const futureValue = monthlyAmount *
       (((Math.pow(1 + monthlyReturn, durationMonths) - 1) / monthlyReturn) * (1 + monthlyReturn));
-    
+
     const totalInvestment = monthlyAmount * durationMonths;
     const gains = futureValue - totalInvestment;
-    
+
     return {
       futureValue: Math.round(futureValue),
       totalInvestment,
@@ -257,15 +257,15 @@ What would you like to dive deeper into?`;
   const calculateLoanImpact = (loanAmount, tenureMonths) => {
     const interestRate = 0.085; // 8.5% annual interest
     const monthlyRate = interestRate / 12;
-    
+
     // EMI calculation
-    const emi = loanAmount * 
-      (monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / 
+    const emi = loanAmount *
+      (monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) /
       (Math.pow(1 + monthlyRate, tenureMonths) - 1);
-    
+
     const totalPayment = emi * tenureMonths;
     const totalInterest = totalPayment - loanAmount;
-    
+
     return {
       emi: Math.round(emi),
       totalPayment: Math.round(totalPayment),
@@ -277,13 +277,13 @@ What would you like to dive deeper into?`;
 
   const calculateRepaymentImpact = (repaymentAmount) => {
     const currentDebt = totalLiability || 0;
-    const interestSaved = repaymentAmount * 0.24; // 24% annual interest saved
-    
+    const interestSaved = repaymentAmount * 0.24; // 24% annual interest saved - this is a rough estimate for illustrative purposes
+
     return {
       debtReduction: repaymentAmount,
       interestSaved: Math.round(interestSaved),
       newDebtLevel: Math.max(0, currentDebt - repaymentAmount),
-      creditScoreImprovement: Math.min(50, Math.round(repaymentAmount / 1000))
+      creditScoreImprovement: Math.min(50, Math.round(repaymentAmount / 1000)) // Max 50 points, 1 point per 1000 repayment
     };
   };
 
@@ -306,7 +306,7 @@ What would you like to dive deeper into?`;
               <input
                 type="number"
                 value={actionData.sipAmount}
-                onChange={(e) => setActionData({...actionData, sipAmount: parseInt(e.target.value)})}
+                onChange={(e) => setActionData({ ...actionData, sipAmount: parseInt(e.target.value) })}
                 style={styles.input}
                 placeholder="₹5,000"
               />
@@ -314,7 +314,7 @@ What would you like to dive deeper into?`;
               <input
                 type="number"
                 value={actionData.sipDuration}
-                onChange={(e) => setActionData({...actionData, sipDuration: parseInt(e.target.value)})}
+                onChange={(e) => setActionData({ ...actionData, sipDuration: parseInt(e.target.value) })}
                 style={styles.input}
                 placeholder="60"
               />
@@ -324,7 +324,7 @@ What would you like to dive deeper into?`;
               </div>
             </div>
           );
-        
+
         case 'take_loan':
           return (
             <div style={styles.formGroup}>
@@ -332,14 +332,14 @@ What would you like to dive deeper into?`;
               <input
                 type="number"
                 value={actionData.loanAmount}
-                onChange={(e) => setActionData({...actionData, loanAmount: parseInt(e.target.value)})}
+                onChange={(e) => setActionData({ ...actionData, loanAmount: parseInt(e.target.value) })}
                 style={styles.input}
                 placeholder="₹5,00,000"
               />
               <label style={styles.inputLabel}>Loan Type</label>
               <select
                 value={actionData.loanType}
-                onChange={(e) => setActionData({...actionData, loanType: e.target.value})}
+                onChange={(e) => setActionData({ ...actionData, loanType: e.target.value })}
                 style={styles.input}
               >
                 <option value="home">Home Loan</option>
@@ -350,7 +350,7 @@ What would you like to dive deeper into?`;
               <input
                 type="number"
                 value={actionData.loanTenure}
-                onChange={(e) => setActionData({...actionData, loanTenure: parseInt(e.target.value)})}
+                onChange={(e) => setActionData({ ...actionData, loanTenure: parseInt(e.target.value) })}
                 style={styles.input}
                 placeholder="240"
               />
@@ -360,7 +360,7 @@ What would you like to dive deeper into?`;
               </div>
             </div>
           );
-        
+
         case 'make_repayment':
           return (
             <div style={styles.formGroup}>
@@ -368,7 +368,7 @@ What would you like to dive deeper into?`;
               <input
                 type="number"
                 value={actionData.repaymentAmount}
-                onChange={(e) => setActionData({...actionData, repaymentAmount: parseInt(e.target.value)})}
+                onChange={(e) => setActionData({ ...actionData, repaymentAmount: parseInt(e.target.value) })}
                 style={styles.input}
                 placeholder="₹10,000"
               />
@@ -378,7 +378,7 @@ What would you like to dive deeper into?`;
               </div>
             </div>
           );
-        
+
         default:
           return null;
       }
@@ -396,8 +396,8 @@ What would you like to dive deeper into?`;
           </div>
           <div style={styles.modalActions}>
             <button onClick={onClose} style={styles.cancelButton}>Cancel</button>
-            <button 
-              onClick={() => handleActionSubmit(actionType)} 
+            <button
+              onClick={() => handleActionSubmit(actionType)}
               style={styles.submitButton}
             >
               Apply Action
@@ -410,16 +410,71 @@ What would you like to dive deeper into?`;
 
   return (
     <>
-      <div style={{...styles.container, flexDirection: showChat ? 'row' : 'column'}}>
-        {/* Main PresentMe Card */}
-        <div style={{...styles.card, width: showChat ? '450px' : '450px'}}>
-          <div style={styles.content}>
+      <div style={{ ...styles.container, flexDirection: showChat ? 'row' : 'column' }}>
+        {/* Image Card (left-most) */}
+        <div style={styles.imageCard}>
+          <img
+            src="https://via.placeholder.com/180x400?text=User+Visual" // Larger placeholder for the new card
+            alt="User Visual"
+            style={styles.fullHeightImage}
+          />
+        </div>
+
+        {/* Financial Actions Panel (Middle) */}
+        {showActions && (
+          <div style={styles.actionsPanel}>
+            <h4 style={styles.actionsPanelTitle}>Take Action</h4>
+            <div style={styles.actionButtons}>
+              <button
+                onClick={() => setActiveAction('start_sip')}
+                style={{ ...styles.actionButton, backgroundColor: '#059669' }}
+              >
+                📈 Start SIP
+              </button>
+              <button
+                onClick={() => setActiveAction('take_loan')}
+                style={{ ...styles.actionButton, backgroundColor: '#dc2626' }}
+              >
+                🏠 Take Loan
+              </button>
+              <button
+                onClick={() => setActiveAction('make_repayment')}
+                style={{ ...styles.actionButton, backgroundColor: '#7c3aed' }}
+              >
+                💰 Make Repayment
+              </button>
+            </div>
+
+            {/* Quick Stats */}
+            <div style={styles.quickStats}>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>Debt-to-Income</span>
+                <span style={styles.statValue}>
+                  {totalLiability && employment?.monthlyIncome
+                    ? `${Math.round((totalLiability / (employment.monthlyIncome * 12)) * 100)}%`
+                    : 'N/A'
+                  }
+                </span>
+              </div>
+              <div style={styles.statItem}>
+                <span style={styles.statLabel}>Available Credit</span>
+                <span style={styles.statValue}>
+                  {creditScore > 700 ? 'Good' : creditScore > 600 ? 'Fair' : 'Poor'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main PresentMe Card (Right of actions) */}
+        <div style={{ ...styles.card, width: showChat ? '450px' : '450px' }}>
+          <div style={{ ...styles.content, flexDirection: 'column', flex: 1 }}>
             <div style={styles.textSection}>
               <div style={styles.headerRow}>
                 <h2 style={styles.heading}>Present Me</h2>
                 <button
                   onClick={() => setShowChat(!showChat)}
-                  style={{...styles.chatToggle, backgroundColor: showChat ? '#10b981' : '#3b82f6'}}
+                  style={{ ...styles.chatToggle, backgroundColor: showChat ? '#10b981' : '#3b82f6' }}
                   title={showChat ? 'Hide Chat' : 'Show Chat'}
                 >
                   {showChat ? <ChevronRight size={16} /> : <MessageCircle size={16} />}
@@ -436,14 +491,16 @@ What would you like to dive deeper into?`;
                 <Detail label="Career Trajectory" value={employment?.careerTrajectory} />
                 <Detail label="Life Stage" value={humanData.lifeStage} />
               </div>
-              
-              {/* Action Toggle Button */}
-              <button
-                onClick={() => setShowActions(!showActions)}
-                style={styles.actionToggle}
-              >
-                🎯 Financial Actions
-              </button>
+
+              {/* Action Toggle Button (Can remain or be removed if actions are always visible) */}
+              {!showActions && ( // Only show toggle if actions are hidden
+                <button
+                  onClick={() => setShowActions(!showActions)}
+                  style={styles.actionToggle}
+                >
+                  🎯 Financial Actions
+                </button>
+              )}
             </div>
 
             {profileImage && (
@@ -454,52 +511,6 @@ What would you like to dive deeper into?`;
               />
             )}
           </div>
-
-          {/* Financial Actions Panel */}
-          {showActions && (
-            <div style={styles.actionsPanel}>
-              <h4 style={styles.actionsPanelTitle}>Take Action</h4>
-              <div style={styles.actionButtons}>
-                <button
-                  onClick={() => setActiveAction('start_sip')}
-                  style={{...styles.actionButton, backgroundColor: '#059669'}}
-                >
-                  📈 Start SIP
-                </button>
-                <button
-                  onClick={() => setActiveAction('take_loan')}
-                  style={{...styles.actionButton, backgroundColor: '#dc2626'}}
-                >
-                  🏠 Take Loan
-                </button>
-                <button
-                  onClick={() => setActiveAction('make_repayment')}
-                  style={{...styles.actionButton, backgroundColor: '#7c3aed'}}
-                >
-                  💰 Make Repayment
-                </button>
-              </div>
-              
-              {/* Quick Stats */}
-              <div style={styles.quickStats}>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Debt-to-Income</span>
-                  <span style={styles.statValue}>
-                    {totalLiability && employment?.monthlyIncome 
-                      ? `${Math.round((totalLiability / (employment.monthlyIncome * 12)) * 100)}%`
-                      : 'N/A'
-                    }
-                  </span>
-                </div>
-                <div style={styles.statItem}>
-                  <span style={styles.statLabel}>Available Credit</span>
-                  <span style={styles.statValue}>
-                    {creditScore > 700 ? 'Good' : creditScore > 600 ? 'Fair' : 'Poor'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
 
           <Handle type="source" position="bottom" />
         </div>
@@ -538,11 +549,13 @@ What would you like to dive deeper into?`;
                         style={styles.templateButton}
                       >
                         <div style={styles.templateContent}>
-                          <div style={{...styles.templateIcon, backgroundColor: template.color === 'bg-blue-500' ? '#3b82f6' : 
-                                        template.color === 'bg-purple-500' ? '#8b5cf6' :
-                                        template.color === 'bg-green-500' ? '#10b981' :
-                                        template.color === 'bg-yellow-500' ? '#f59e0b' :
-                                        template.color === 'bg-indigo-500' ? '#6366f1' : '#f97316'}}>
+                          <div style={{
+                            ...styles.templateIcon, backgroundColor: template.color === 'bg-blue-500' ? '#3b82f6' :
+                              template.color === 'bg-purple-500' ? '#8b5cf6' :
+                                template.color === 'bg-green-500' ? '#10b981' :
+                                  template.color === 'bg-yellow-500' ? '#f59e0b' :
+                                    template.color === 'bg-indigo-500' ? '#6366f1' : '#f97316'
+                          }}>
                             <IconComponent color="white" size={14} />
                           </div>
                           <div style={styles.templateText}>
@@ -568,29 +581,33 @@ What would you like to dive deeper into?`;
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    style={{...styles.messageContainer, justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'}}
+                    style={{ ...styles.messageContainer, justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start' }}
                   >
                     <div
-                      style={{...styles.messageBubble, 
-                             backgroundColor: message.sender === 'user' ? '#3b82f6' : '#f3f4f6',
-                             color: message.sender === 'user' ? 'white' : '#1f2937'}}
+                      style={{
+                        ...styles.messageBubble,
+                        backgroundColor: message.sender === 'user' ? '#3b82f6' : '#f3f4f6',
+                        color: message.sender === 'user' ? 'white' : '#1f2937'
+                      }}
                     >
                       <div style={styles.messageText}>{message.text}</div>
-                      <div style={{...styles.messageTime, 
-                                  color: message.sender === 'user' ? 'rgba(255,255,255,0.7)' : '#9ca3af'}}>
+                      <div style={{
+                        ...styles.messageTime,
+                        color: message.sender === 'user' ? 'rgba(255,255,255,0.7)' : '#9ca3af'
+                      }}>
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
                   </div>
                 ))}
-                
+
                 {isLoading && (
-                  <div style={{...styles.messageContainer, justifyContent: 'flex-start'}}>
-                    <div style={{...styles.messageBubble, backgroundColor: '#f3f4f6'}}>
+                  <div style={{ ...styles.messageContainer, justifyContent: 'flex-start' }}>
+                    <div style={{ ...styles.messageBubble, backgroundColor: '#f3f4f6' }}>
                       <div style={styles.typingIndicator}>
                         <div style={styles.typingDot}></div>
-                        <div style={{...styles.typingDot, animationDelay: '0.1s'}}></div>
-                        <div style={{...styles.typingDot, animationDelay: '0.2s'}}></div>
+                        <div style={{ ...styles.typingDot, animationDelay: '0.1s' }}></div>
+                        <div style={{ ...styles.typingDot, animationDelay: '0.2s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -664,6 +681,28 @@ const styles = {
     gap: '16px',
     alignItems: 'flex-start',
   },
+  // New Image Card style
+  imageCard: {
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '16px',
+    padding: '10px', // Smaller padding to keep image prominent
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
+    fontFamily: 'Inter, sans-serif',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center', // Center the image vertically
+    alignItems: 'center', // Center the image horizontally
+    width: '200px', // Fixed width for the image card
+    // The height will be dynamically set by a parent that wraps all three cards
+    flexShrink: 0, // Prevent it from shrinking
+  },
+  fullHeightImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover', // Cover the entire area of the card
+    borderRadius: '12px',
+  },
   card: {
     background: '#ffffff',
     border: '1px solid #e5e7eb',
@@ -672,20 +711,21 @@ const styles = {
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
     fontFamily: 'Inter, sans-serif',
     display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    flexDirection: 'column', // Changed to column for inner content
+    flex: 1, // Allow it to take available space
     position: 'relative',
   },
   content: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: 'column',
+    gap: '12px',
+    flex: 1,
   },
   textSection: {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    width: '60%',
+    width: '100%',
   },
   headerRow: {
     display: 'flex',
@@ -737,6 +777,8 @@ const styles = {
     borderRadius: '12px',
     objectFit: 'cover',
     boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+    alignSelf: 'flex-end',
+    marginTop: 'auto',
   },
   actionToggle: {
     marginTop: '12px',
@@ -751,11 +793,16 @@ const styles = {
     transition: 'all 0.2s',
   },
   actionsPanel: {
-    marginTop: '16px',
-    padding: '16px',
-    backgroundColor: '#f8fafc',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
+    background: '#ffffff', // Changed to match other cards
+    border: '1px solid #e5e7eb',
+    borderRadius: '16px',
+    padding: '20px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    width: '250px', // Fixed width for action card
+    flexShrink: 0,
   },
   actionsPanelTitle: {
     fontSize: '16px',
@@ -781,26 +828,26 @@ const styles = {
   },
   quickStats: {
     display: 'flex',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    gap: '8px',
     paddingTop: '12px',
     borderTop: '1px dashed #d1d5db',
   },
   statItem: {
     display: 'flex',
-    flexDirection: 'column',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
   },
   statLabel: {
     fontSize: '12px',
     color: '#6b7280',
-    marginBottom: '4px',
   },
   statValue: {
     fontSize: '14px',
     fontWeight: '600',
     color: '#1f2937',
   },
-  // Chat Panel Styles
   chatPanel: {
     width: '380px',
     backgroundColor: 'white',
@@ -808,7 +855,7 @@ const styles = {
     borderRadius: '16px',
     display: 'flex',
     flexDirection: 'column',
-    height: '600px',
+    height: '600px', // Fixed height for chat panel
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
   },
   chatHeader: {
@@ -1008,7 +1055,7 @@ const styles = {
     justifyContent: 'center',
     transition: 'all 0.2s',
   },
-  // Modal Styles
+  // Modal Styles (no changes)
   modalOverlay: {
     position: 'fixed',
     top: 0,

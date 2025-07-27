@@ -1,3 +1,4 @@
+
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
@@ -9,7 +10,7 @@ export default function FutureMe({ data, allFutureScenarios, presentData }) {
   if (!data) return null;
 
   // Chat state
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -154,7 +155,7 @@ ${scenarios.map((scenario, index) => {
 - Avoiding lifestyle inflation traps
 - Building multiple income streams
 
-The journey wasn't just about money—it was about building financial discipline and long-term thinking.`;
+The journey wasn't just about money—it's about building financial discipline and long-term thinking.`;
     }
 
     if (prompt.includes('compare') || prompt.includes('alternative')) {
@@ -363,17 +364,17 @@ What specific aspect of this future would you like to explore? I can discuss the
 
   return (
     <>
-      <div style={{...styles.container, flexDirection: showChat ? 'row' : 'column'}}>
-        {/* Main FutureMe Card */}
-        <div style={{...styles.originalContainer, width: showChat ? '560px' : '560px'}}>
+      <div style={styles.outerContainer}>
+        {/* Main FutureMe Card (Left Side) */}
+        <div style={{...styles.originalContainer, width: '400px'}}> {/* Reduced width */}
           {/* Top connector only */}
           <Handle type="target" position={Position.Top} style={styles.handle} />
 
           <div style={styles.card}>
-            {/* Left content */}
+            {/* Content */}
             <div style={styles.content}>
               <div style={styles.headerRow}>
-                <h2 style={styles.header}>🔮 {versionName || 'FutureMe'}</h2>
+                <h2 style={styles.header}>🔮 Future Me at {estimatedAgeRange}</h2>
                 <button
                   onClick={() => setShowChat(!showChat)}
                   style={{...styles.chatToggle, backgroundColor: showChat ? '#10b981' : '#8b5cf6'}}
@@ -383,7 +384,7 @@ What specific aspect of this future would you like to explore? I can discuss the
                 </button>
               </div>
 
-              <p style={styles.info}><strong>Age Range:</strong> {estimatedAgeRange}</p>
+              <p style={styles.info}><strong>Version:</strong> {versionName}</p>
               <p style={styles.info}><strong>Years:</strong> {estimatedYearRange}</p>
               <p style={styles.info}><strong>Summary:</strong> {summary}</p>
 
@@ -434,152 +435,159 @@ What specific aspect of this future would you like to explore? I can discuss the
                 </div>
               )}
             </div>
-
-            {/* Right image */}
-            <div style={styles.imageContainer}>
-              <img
-                src={profileImage || defaultImage}
-                alt="Future Me"
-                style={styles.image}
-              />
-            </div>
           </div>
         </div>
 
-        {/* Chat Panel */}
+        {/* Right Side - Image Card and Chat Panel Stacked */}
         {showChat && (
-          <div style={styles.chatPanel}>
-            {/* Chat Header */}
-            <div style={styles.chatHeader}>
-              <div style={styles.chatHeaderContent}>
-                <MessageCircle style={styles.chatIcon} size={20} />
-                <div>
-                  <h3 style={styles.chatTitle}>Scenario Analysis</h3>
-                  <p style={styles.chatSubtitle}>Explore this future path</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowChat(false)}
-                style={styles.chatCloseButton}
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Scenario Context Banner */}
-            <div style={styles.scenarioContext}>
-              <div style={styles.contextText}>
-                <strong>{versionName}</strong> • Considering {getRelevantScenarios().length} scenario(s)
-              </div>
-              <div style={styles.contextSubtext}>
-                Future {futureIndex} - {estimatedAgeRange}
-              </div>
-            </div>
-
-            {/* Chat Templates */}
-            {messages.length === 0 && (
-              <div style={styles.chatTemplates}>
-                <h4 style={styles.templatesTitle}>Explore this future scenario:</h4>
-                <div style={styles.templatesList}>
-                  {chatTemplates.map((template) => {
-                    const IconComponent = template.icon;
-                    return (
-                      <button
-                        key={template.id}
-                        onClick={() => handleTemplateClick(template)}
-                        style={styles.templateButton}
-                      >
-                        <div style={styles.templateContent}>
-                          <div style={{...styles.templateIcon, backgroundColor: 
-                                        template.color === 'bg-blue-500' ? '#3b82f6' : 
-                                        template.color === 'bg-purple-500' ? '#8b5cf6' :
-                                        template.color === 'bg-green-500' ? '#10b981' :
-                                        template.color === 'bg-red-500' ? '#ef4444' :
-                                        template.color === 'bg-yellow-500' ? '#f59e0b' : '#6366f1'}}>
-                            <IconComponent color="white" size={14} />
-                          </div>
-                          <div style={styles.templateText}>
-                            <div style={styles.templateTitle}>{template.title}</div>
-                            <div style={styles.templateSubtitle}>{template.subtitle}</div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Chat Messages */}
-            {messages.length > 0 && (
-              <div style={styles.chatMessages}>
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    style={{...styles.messageContainer, justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'}}
-                  >
-                    <div
-                      style={{...styles.messageBubble, 
-                             backgroundColor: message.sender === 'user' ? '#8b5cf6' : '#f3f4f6',
-                             color: message.sender === 'user' ? 'white' : '#1f2937'}}
-                    >
-                      <div style={styles.messageText}>{message.text}</div>
-                      <div style={{...styles.messageTime, 
-                                  color: message.sender === 'user' ? 'rgba(255,255,255,0.7)' : '#9ca3af'}}>
-                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {isLoading && (
-                  <div style={{...styles.messageContainer, justifyContent: 'flex-start'}}>
-                    <div style={{...styles.messageBubble, backgroundColor: '#f3f4f6'}}>
-                      <div style={styles.typingIndicator}>
-                        <div style={styles.typingDot}></div>
-                        <div style={{...styles.typingDot, animationDelay: '0.1s'}}></div>
-                        <div style={{...styles.typingDot, animationDelay: '0.2s'}}></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Back to Templates Button */}
-            {messages.length > 0 && (
-              <div style={styles.backToTemplates}>
-                <button
-                  onClick={() => {
-                    setMessages([]);
-                    setSelectedTemplate(null);
-                  }}
-                  style={styles.backButton}
-                >
-                  <ChevronLeft size={14} /> Back to scenario questions
-                </button>
-              </div>
-            )}
-
-            {/* Chat Input */}
-            <div style={styles.chatInput}>
-              <div style={styles.inputContainer}>
-                <input
-                  type="text"
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about this future scenario..."
-                  style={styles.chatInputField}
-                  disabled={isLoading}
+          <div style={styles.rightPanel}>
+            {/* New Image Card */}
+            <div style={styles.imageCard}>
+                <img
+                    src={profileImage || defaultImage}
+                    alt="Future Me Profile"
+                    style={styles.imageCardImage}
                 />
+                <div style={styles.imageCardText}>
+                    <p style={styles.imageCardTitle}>{versionName}</p>
+                    <p style={styles.imageCardSubtitle}>{estimatedAgeRange} • {estimatedYearRange}</p>
+                </div>
+            </div>
+
+            {/* Chat Panel */}
+            <div style={styles.chatPanel}>
+              {/* Chat Header */}
+              <div style={styles.chatHeader}>
+                <div style={styles.chatHeaderContent}>
+                  <MessageCircle style={styles.chatIcon} size={20} />
+                  <div>
+                    <h3 style={styles.chatTitle}>Scenario Analysis</h3>
+                    <p style={styles.chatSubtitle}>Explore this future path</p>
+                  </div>
+                </div>
                 <button
-                  onClick={() => handleSendMessage()}
-                  disabled={isLoading || !inputMessage.trim()}
-                  style={styles.sendButton}
+                  onClick={() => setShowChat(false)}
+                  style={styles.chatCloseButton}
                 >
-                  <Send size={14} />
+                  <X size={16} />
                 </button>
+              </div>
+
+              {/* Scenario Context Banner */}
+              <div style={styles.scenarioContext}>
+                <div style={styles.contextText}>
+                  <strong>{versionName}</strong> • Considering {getRelevantScenarios().length} scenario(s)
+                </div>
+                <div style={styles.contextSubtext}>
+                  Future {futureIndex} - {estimatedAgeRange}
+                </div>
+              </div>
+
+              {/* Chat Templates */}
+              {messages.length === 0 && (
+                <div style={styles.chatTemplates}>
+                  <h4 style={styles.templatesTitle}>Explore this future scenario:</h4>
+                  <div style={styles.templatesList}>
+                    {chatTemplates.map((template) => {
+                      const IconComponent = template.icon;
+                      return (
+                        <button
+                          key={template.id}
+                          onClick={() => handleTemplateClick(template)}
+                          style={styles.templateButton}
+                        >
+                          <div style={styles.templateContent}>
+                            <div style={{...styles.templateIcon, backgroundColor: 
+                                          template.color === 'bg-blue-500' ? '#3b82f6' : 
+                                          template.color === 'bg-purple-500' ? '#8b5cf6' :
+                                          template.color === 'bg-green-500' ? '#10b981' :
+                                          template.color === 'bg-red-500' ? '#ef4444' :
+                                          template.color === 'bg-yellow-500' ? '#f59e0b' : '#6366f1'}}>
+                              <IconComponent color="white" size={14} />
+                            </div>
+                            <div style={styles.templateText}>
+                              <div style={styles.templateTitle}>{template.title}</div>
+                              <div style={styles.templateSubtitle}>{template.subtitle}</div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Chat Messages */}
+              {messages.length > 0 && (
+                <div style={styles.chatMessages}>
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      style={{...styles.messageContainer, justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start'}}
+                    >
+                      <div
+                        style={{...styles.messageBubble, 
+                               backgroundColor: message.sender === 'user' ? '#8b5cf6' : '#f3f4f6',
+                               color: message.sender === 'user' ? 'white' : '#1f2937'}}
+                      >
+                        <div style={styles.messageText}>{message.text}</div>
+                        <div style={{...styles.messageTime, 
+                                    color: message.sender === 'user' ? 'rgba(255,255,255,0.7)' : '#9ca3af'}}>
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {isLoading && (
+                    <div style={{...styles.messageContainer, justifyContent: 'flex-start'}}>
+                      <div style={{...styles.messageBubble, backgroundColor: '#f3f4f6'}}>
+                        <div style={styles.typingIndicator}>
+                          <div style={styles.typingDot}></div>
+                          <div style={{...styles.typingDot, animationDelay: '0.1s'}}></div>
+                          <div style={{...styles.typingDot, animationDelay: '0.2s'}}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Back to Templates Button */}
+              {messages.length > 0 && (
+                <div style={styles.backToTemplates}>
+                  <button
+                    onClick={() => {
+                      setMessages([]);
+                      setSelectedTemplate(null);
+                    }}
+                    style={styles.backButton}
+                  >
+                    <ChevronLeft size={14} /> Back to scenario questions
+                  </button>
+                </div>
+              )}
+
+              {/* Chat Input */}
+              <div style={styles.chatInput}>
+                <div style={styles.inputContainer}>
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask about this future scenario..."
+                    style={styles.chatInputField}
+                    disabled={isLoading}
+                  />
+                  <button
+                    onClick={() => handleSendMessage()}
+                    disabled={isLoading || !inputMessage.trim()}
+                    style={styles.sendButton}
+                  >
+                    <Send size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -616,10 +624,10 @@ function AssetItem({ name, data }) {
 }
 
 const styles = {
-  container: {
+  outerContainer: {
     display: 'flex',
     gap: '16px',
-    alignItems: 'flex-start',
+    alignItems: 'flex-start', // Align items to the top
   },
   originalContainer: {
     fontFamily: 'sans-serif',
@@ -629,6 +637,7 @@ const styles = {
     backgroundColor: '#fff',
     overflow: 'hidden',
     position: 'relative',
+    width: '400px', // Reduced width for the main card
   },
   handle: {
     background: '#555',
@@ -643,7 +652,7 @@ const styles = {
   },
   content: {
     padding: 20,
-    flex: 2,
+    flex: 1, 
   },
   headerRow: {
     display: 'flex',
@@ -661,20 +670,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  imageContainer: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderLeft: '1px solid #eee',
-  },
-  image: {
-    width: '100%',
-    height: 'auto',
-    objectFit: 'contain',
-    padding: 8,
   },
   header: {
     fontSize: '1.5rem',
@@ -736,7 +731,52 @@ const styles = {
     height: '100%',
     transition: 'width 0.3s ease-in-out',
   },
-  // Chat Panel Styles
+  // Right Panel to stack image card and chat panel
+  rightPanel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px', // Space between image card and chat panel
+    width: '380px', // Consistent width for the right stack
+  },
+  // New Image Card Styles
+  imageCard: {
+    backgroundColor: 'white',
+    border: '1px solid #e5e7eb',
+    borderRadius: '16px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '20px',
+    textAlign: 'center',
+  },
+  imageCardImage: {
+    width: '120px',
+    height: '120px',
+    borderRadius: '50%', 
+    objectFit: 'cover',
+    marginBottom: '15px',
+    border: '4px solid #8b5cf6', 
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  },
+  imageCardText: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  imageCardTitle: {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: '5px',
+    margin: 0,
+  },
+  imageCardSubtitle: {
+    fontSize: '0.9rem',
+    color: '#6b7280',
+    margin: 0,
+  },
+  // Chat Panel Styles 
   chatPanel: {
     width: '380px',
     backgroundColor: 'white',
@@ -744,7 +784,7 @@ const styles = {
     borderRadius: '16px',
     display: 'flex',
     flexDirection: 'column',
-    height: '600px',
+    height: '600px', // Keep chat panel height consistent
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
   },
   chatHeader: {
@@ -941,5 +981,10 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s',
+  },
+  // Keyframe for typing indicator (added for completeness, assuming it's in a CSS file normally)
+  '@keyframes bounce': {
+    '0%, 80%, 100%': { transform: 'translateY(0)' },
+    '40%': { transform: 'translateY(-4px)' },
   },
 };
