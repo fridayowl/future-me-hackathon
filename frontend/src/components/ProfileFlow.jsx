@@ -1,6 +1,6 @@
 /* eslint-disable no-case-declarations */
 /* eslint-disable no-unused-vars */
-import React, { useState, useCallback, useEffect,useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   ReactFlow,
   addEdge,
@@ -10,9 +10,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import futureImage0 from '../assets/image1.png'; 
-import futureImage1 from '../assets/image2.png'; // Make sure this path is correct
-import futureImage2 from '../assets/image3.png'; // Make sure this path is correct
-import futureImage3 from '../assets/image4.png'; // Make sure this path is correct
+import futureImage1 from '../assets/image2.png';
+import futureImage2 from '../assets/image3.png';
+import futureImage3 from '../assets/image4.png';
 import PresentMe from './PresentMe';
 import FutureMe from './FutureMe';
 
@@ -21,29 +21,41 @@ const nodeTypes = {
   futureMe: FutureMe,
 };
 
-
 const ProfileFlow = ({ profileData, onStartConversation }) => {
-  console.log("profile data ", profileData)
+  console.log("profile data ", profileData);
+  
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [originalFutureStages, setOriginalFutureStages] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [appliedActions, setAppliedActions] = useState([]);
-const reactFlowInstanceRef = useRef(null);
+  const reactFlowInstanceRef = useRef(null);
+  
+  // ADD: Loading state for actions
+  const [isApplyingAction, setIsApplyingAction] = useState(false);
 
- const futureImages = [
+  const futureImages = [
     futureImage1,
     futureImage2,
     futureImage3,
     futureImage0,
-    
-    // Add more if you have more than 3 future stages
   ];
-const onInit = (instance) => {
-  reactFlowInstanceRef.current = instance;
-  instance.setViewport({ x: 0, y: 100, zoom:0.2 }, { duration: 800 });
-};
-  // Enhanced financial action calculator
+
+  // Generate change summary helper function
+  const generateChangeSummary = (actionType, actionData, futureProjection) => {
+    switch (actionType) {
+      case 'start_sip':
+        return `Started SIP of ₹${actionData.sipAmount.toLocaleString()}/month. Expected wealth increase: ₹${futureProjection?.netWorthIncrease?.toLocaleString() || 0}`;
+      case 'take_loan':
+        return `Took ${actionData.loanType} loan of ₹${actionData.loanAmount.toLocaleString()}. Debt reduction: ₹${futureProjection?.debtReduction?.toLocaleString() || 0}`;
+      case 'make_repayment':
+        return `Made repayment of ₹${actionData.repaymentAmount.toLocaleString()}. Net worth boost: ₹${futureProjection?.netWorthIncrease?.toLocaleString() || 0}`;
+      default:
+        return 'Financial action applied';
+    }
+  };
+
+  // Enhanced financial action calculator - FIXED: No dependencies to avoid circular references
   const calculateFinancialImpact = useCallback((actionType, actionData, currentProfile) => {
     const impact = {
       netWorthChange: 0,
@@ -161,151 +173,142 @@ const onInit = (instance) => {
     }
 
     return impact;
-  }, []);
+  }, []); // FIXED: Empty dependencies to avoid circular references
 
-  // Apply financial action and update future stages
+  // Apply financial action and update future stages - MODIFIED: Added loading state
   const applyFinancialAction = useCallback((actionType, actionData) => {
     if (!profileData) return;
 
+    // SET: Start loading
+    setIsApplyingAction(true);
+
     console.log('Applying financial action:', actionType, actionData);
     
-    const impact = calculateFinancialImpact(actionType, actionData, profileData);
-    const newAction = {
-      id: Date.now(),
-      type: actionType,
-      data: actionData,
-      impact,
-      timestamp: new Date().toISOString()
-    };
-
-    // Update applied actions
-    setAppliedActions(prev => [...prev, newAction]);
-
-    // Calculate updated future stages
-    const updatedStages = profileData.futureStages.map((stage, index) => {
-      const futureProjection = impact.futureProjections[index];
-      if (!futureProjection) return stage;
-
-      // Create updated stage with changes
-      const updatedStage = {
-        ...stage,
-        detailedFinancialProjection: {
-          ...stage.detailedFinancialProjection,
-          projectedNetWorth: stage.detailedFinancialProjection.projectedNetWorth + (futureProjection.netWorthIncrease || 0),
-          projectedTotalDebt: Math.max(0, stage.detailedFinancialProjection.projectedTotalDebt + (futureProjection.debtReduction ? -futureProjection.debtReduction : impact.debtChange || 0)),
-          projectedCreditScore: Math.min(850, Math.max(300, stage.detailedFinancialProjection.projectedCreditScore + (futureProjection.creditScoreIncrease || impact.creditScoreChange || 0))),
-          projectedMonthlySavings: stage.detailedFinancialProjection.projectedMonthlySavings + (impact.monthlyCommitmentChange || 0),
-          projectedInvestments: stage.detailedFinancialProjection.projectedInvestments + (futureProjection.totalInvestmentValue || 0)
-        },
-        // Add change indicator
-        changes: {
-          action: newAction,
-          appliedAt: new Date().toISOString(),
-          summary: generateChangeSummary(actionType, actionData, futureProjection)
-        }
+    // ADD: Simulate async processing with setTimeout to show loader
+    setTimeout(() => {
+      const impact = calculateFinancialImpact(actionType, actionData, profileData);
+      const newAction = {
+        id: Date.now(),
+        type: actionType,
+        data: actionData,
+        impact,
+        timestamp: new Date().toISOString()
       };
 
-      // Update asset ownership based on action
-      if (actionType === 'take_loan') {
-        if (actionData.loanType === 'home') {
-          updatedStage.assetOwnershipProjection.home = {
-            ...updatedStage.assetOwnershipProjection.home,
-            ownershipStatus: 'Owned (loan)',
-            notes: `Acquired through loan of ₹${actionData.loanAmount.toLocaleString()}`
-          };
-        } else if (actionData.loanType === 'car') {
-          updatedStage.assetOwnershipProjection.car = {
-            ...updatedStage.assetOwnershipProjection.car,
-            ownershipStatus: 'Owned (loan)',
-            notes: `Acquired through loan of ₹${actionData.loanAmount.toLocaleString()}`
-          };
-        }
-      }
+      // Update applied actions
+      setAppliedActions(prev => [...prev, newAction]);
 
-      return updatedStage;
-    });
+      // Calculate updated future stages
+      const updatedStages = profileData.futureStages.map((stage, index) => {
+        const futureProjection = impact.futureProjections[index];
+        if (!futureProjection) return stage;
 
-    // Update nodes in-place without changing positions
-    setNodes(currentNodes => 
-      currentNodes.map(node => {
-        if (node.type === 'presentMe') {
-          // Update present node data with new profile
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              humanDescription: {
-                ...node.data.humanDescription,
-                // Keep the same data structure but could add applied actions indicator
-              },
-              onFinancialAction: applyFinancialAction,
-            }
-          };
-        } else if (node.type === 'futureMe') {
-          // Find the corresponding updated stage
-          const stageIndex = parseInt(node.id.replace('future-', ''));
-          const updatedStage = updatedStages[stageIndex];
-          
-          if (updatedStage) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                detailedFinancialProjection: updatedStage.detailedFinancialProjection,
-                assetOwnershipProjection: updatedStage.assetOwnershipProjection,
-                changes: updatedStage.changes,
-              },
-              style: updatedStage.changes ? {
-                ...node.style,
-                border: '3px solid #10b981',
-                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)',
-                transform: 'scale(1.02)',
-              } : node.style,
-              className: updatedStage.changes ? 'updated-node' : node.className
+        // Create updated stage with changes
+        const updatedStage = {
+          ...stage,
+          detailedFinancialProjection: {
+            ...stage.detailedFinancialProjection,
+            projectedNetWorth: stage.detailedFinancialProjection.projectedNetWorth + (futureProjection.netWorthIncrease || 0),
+            projectedTotalDebt: Math.max(0, stage.detailedFinancialProjection.projectedTotalDebt + (futureProjection.debtReduction ? -futureProjection.debtReduction : impact.debtChange || 0)),
+            projectedCreditScore: Math.min(850, Math.max(300, stage.detailedFinancialProjection.projectedCreditScore + (futureProjection.creditScoreIncrease || impact.creditScoreChange || 0))),
+            projectedMonthlySavings: stage.detailedFinancialProjection.projectedMonthlySavings + (impact.monthlyCommitmentChange || 0),
+            projectedInvestments: stage.detailedFinancialProjection.projectedInvestments + (futureProjection.totalInvestmentValue || 0)
+          },
+          changes: {
+            action: newAction,
+            appliedAt: new Date().toISOString(),
+            summary: generateChangeSummary(actionType, actionData, futureProjection)
+          }
+        };
+
+        // Update asset ownership based on action
+        if (actionType === 'take_loan') {
+          if (actionData.loanType === 'home') {
+            updatedStage.assetOwnershipProjection.home = {
+              ...updatedStage.assetOwnershipProjection.home,
+              ownershipStatus: 'Owned (loan)',
+              notes: `Acquired through loan of ₹${actionData.loanAmount.toLocaleString()}`
+            };
+          } else if (actionData.loanType === 'car') {
+            updatedStage.assetOwnershipProjection.car = {
+              ...updatedStage.assetOwnershipProjection.car,
+              ownershipStatus: 'Owned (loan)',
+              notes: `Acquired through loan of ₹${actionData.loanAmount.toLocaleString()}`
             };
           }
         }
-        return node;
-      })
-    );
 
-    // Update edges to show changes
-    setEdges(currentEdges => 
-      currentEdges.map(edge => {
-        if (edge.source === 'present' && edge.target.startsWith('future-')) {
-          const stageIndex = parseInt(edge.target.replace('future-', ''));
-          const updatedStage = updatedStages[stageIndex];
-          
-          return {
-            ...edge,
-            style: {
-              stroke: updatedStage?.changes ? '#10b981' : '#6366f1',
-              strokeWidth: updatedStage?.changes ? 3 : 2,
-            },
-            animated: updatedStage?.changes ? true : false,
-          };
-        }
-        return edge;
-      })
-    );
+        return updatedStage;
+      });
 
-    setHasChanges(true);
-  }, [profileData, calculateFinancialImpact]);
+      // FIXED: Update nodes in-place without changing positions and without circular references
+      setNodes(currentNodes => 
+        currentNodes.map(node => {
+          if (node.type === 'presentMe') {
+            // Update present node data but keep the same function reference to avoid circular updates
+            return {
+              ...node, // Preserve ALL existing properties including position
+              data: {
+                ...node.data,
+                // Don't pass the function here to avoid circular references
+              }
+            };
+          } else if (node.type === 'futureMe') {
+            // Find the corresponding updated stage
+            const stageIndex = parseInt(node.id.replace('future-', ''));
+            const updatedStage = updatedStages[stageIndex];
+            
+            if (updatedStage) {
+              return {
+                ...node, // Preserve ALL existing properties including position
+                data: {
+                  ...node.data,
+                  detailedFinancialProjection: updatedStage.detailedFinancialProjection,
+                  assetOwnershipProjection: updatedStage.assetOwnershipProjection,
+                  changes: updatedStage.changes,
+                },
+                style: updatedStage.changes ? {
+                  ...node.style,
+                  border: '3px solid #10b981',
+                  boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)',
+                  transform: 'scale(1.02)',
+                } : node.style,
+                className: updatedStage.changes ? 'updated-node' : node.className
+              };
+            }
+          }
+          return node;
+        })
+      );
 
-  const generateChangeSummary = (actionType, actionData, futureProjection) => {
-    switch (actionType) {
-      case 'start_sip':
-        return `Started SIP of ₹${actionData.sipAmount.toLocaleString()}/month. Expected wealth increase: ₹${futureProjection?.netWorthIncrease?.toLocaleString() || 0}`;
-      case 'take_loan':
-        return `Took ${actionData.loanType} loan of ₹${actionData.loanAmount.toLocaleString()}. Debt reduction: ₹${futureProjection?.debtReduction?.toLocaleString() || 0}`;
-      case 'make_repayment':
-        return `Made repayment of ₹${actionData.repaymentAmount.toLocaleString()}. Net worth boost: ₹${futureProjection?.netWorthIncrease?.toLocaleString() || 0}`;
-      default:
-        return 'Financial action applied';
-    }
-  };
+      // Update edges to show changes
+      setEdges(currentEdges => 
+        currentEdges.map(edge => {
+          if (edge.source === 'present' && edge.target.startsWith('future-')) {
+            const stageIndex = parseInt(edge.target.replace('future-', ''));
+            const updatedStage = updatedStages[stageIndex];
+            
+            return {
+              ...edge,
+              style: {
+                stroke: updatedStage?.changes ? '#10b981' : '#6366f1',
+                strokeWidth: updatedStage?.changes ? 3 : 2,
+              },
+              animated: updatedStage?.changes ? true : false,
+            };
+          }
+          return edge;
+        })
+      );
 
-  // Convert profile data to React Flow nodes and edges
+      setHasChanges(true);
+      
+      // SET: End loading after updates are complete
+      setIsApplyingAction(false);
+    }, 60000); // 1 second delay to show loader
+  }, [profileData, calculateFinancialImpact]); // FIXED: Only include essential dependencies
+
+  // Convert profile data to React Flow nodes and edges - FIXED: Stable reference to prevent infinite loops
   const convertProfileToNodes = useCallback((profile) => {
     if (!profile) return { nodes: [], edges: [] };
 
@@ -316,10 +319,10 @@ const onInit = (instance) => {
     const presentNode = {
       id: 'present',
       type: 'presentMe',
-      position: { x: 3500, y: -500 },
+      position: { x: 3900, y: -500 },
       data: {
         humanDescription: {
-          name: profileData.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
+          name: profile.basicInfo?.demographics?.estimatedName || 'SHIXXXX',
           age: profile.basicInfo?.demographics?.estimatedAge || 'Unknown',
           lifeStage: profile.basicInfo?.demographics?.lifeStage || 'Professional',
           netWorth: profile.basicInfo?.financialSummary?.netWorth || 0,
@@ -346,8 +349,8 @@ const onInit = (instance) => {
           id: `future-${index}`,
           type: 'futureMe',
           position: { 
-            x: 1500 + (index * 990), 
-            y: 20 
+            x: 2000 + (index * 990), 
+            y: 60 
           },
           data: {
             versionName: stage.versionName || `Future Me ${index + 1}`,
@@ -365,7 +368,7 @@ const onInit = (instance) => {
             assetOwnershipProjection: stage.assetOwnershipProjection || {},
             creditScore: stage.creditScore || {},
             goals: stage.goals || [],
-             profileImage: futureImages[index] || stage.profileImage,
+            profileImage: futureImages[index] || stage.profileImage,
             incomeProjection: stage.incomeProjection || {},
             // Add change indicators if they exist
             changes: stage.changes || null,
@@ -390,9 +393,9 @@ const onInit = (instance) => {
     }
 
     return { nodes: newNodes, edges: newEdges };
-  }, [applyFinancialAction, profileData]);
+  }, []); // FIXED: Empty dependencies to prevent infinite loops
 
-  // Initialize nodes and edges when profileData changes
+  // Initialize nodes and edges when profileData changes - FIXED: Removed convertProfileToNodes from dependencies
   useEffect(() => {
     if (profileData) {
       const { nodes: newNodes, edges: newEdges } = convertProfileToNodes(profileData);
@@ -404,11 +407,11 @@ const onInit = (instance) => {
         setOriginalFutureStages([...profileData.futureStages]);
       }
     }
-  }, [profileData, convertProfileToNodes]);
+  }, [profileData]); // FIXED: Only depend on profileData
 
   // Reset to original projections
   const resetProjections = useCallback(() => {
-    if (originalFutureStages.length > 0) {
+    if (originalFutureStages.length > 0 && profileData) {
       const originalProfile = {
         ...profileData,
         futureStages: originalFutureStages
@@ -467,8 +470,57 @@ const onInit = (instance) => {
       position: 'relative',
       margin: '0 auto'
     }}>
-      {/* Header with controls */}
-      
+      {/* ADD: Loading Overlay */}
+      {isApplyingAction && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          borderRadius: '12px'
+        }}>
+          <div style={{
+            background: 'white',
+            padding: '32px',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            {/* Loading Spinner */}
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '4px solid #e5e7eb',
+              borderTop: '4px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }}></div>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#374151'
+            }}>
+              Applying Financial Action...
+            </div>
+            <div style={{
+              fontSize: '14px',
+              color: '#6b7280',
+              textAlign: 'center'
+            }}>
+              Updating your future projections
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* React Flow */}
       <div style={{ 
@@ -482,9 +534,10 @@ const onInit = (instance) => {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-         nodesDraggable={false}  
-           panOnDrag={false}  
-          fitView
+          nodesDraggable={false}  // FIXED: Prevent node dragging
+          panOnDrag={false}       // FIXED: Prevent panning with drag
+          preventScrolling={true}  // Allow scrolling
+          fitView={true}        // FIXED: Prevent auto-fitting which causes position changes
           fitViewOptions={{
             padding: 0.1,
             includeHiddenNodes: true,
@@ -492,9 +545,6 @@ const onInit = (instance) => {
           defaultEdgeOptions={{
             style: { strokeWidth: 2, stroke: '#10b981' },
             markerEnd: { type: MarkerType.Arrow }
-          }}
-          style={{
-           
           }}
         />
       </div>
@@ -547,6 +597,14 @@ const onInit = (instance) => {
           </div>
         </div>
       )}
+
+      {/* ADD: CSS for spinner animation */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -2,31 +2,56 @@
 // frontend/src/components/PersonaSelector.jsx
 // Component for selecting different Future Me personas
 
-import React, { useState, useEffect } from 'react';
-import { User, TrendingUp, Clock, Crown } from 'lucide-react';
-import { apiService } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { User, TrendingUp, Clock, Crown } from "lucide-react";
+import { apiService } from "../services/api";
 
-const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) => {
+const PersonaSelector = ({
+  currentAge,
+  selectedAge,
+  onAgeSelect,
+  userProfile,
+}) => {
   const [personaCharacteristics, setPersonaCharacteristics] = useState({});
   const [loadingAge, setLoadingAge] = useState(null);
 
   const predefinedAges = [
-    { age: 30, icon: TrendingUp, title: "Early Career", description: "Building foundations" },
-    { age: 40, icon: User, title: "Prime Years", description: "Wealth accumulation" },
-    { age:50, icon: Clock, title: "Mid-Life", description: "Financial maturity" },
-    { age: 60, icon: Crown, title: "Pre-Retirement", description: "Wisdom & security" }
+    {
+      age: 30,
+      icon: TrendingUp,
+      title: "Early Career",
+      description: "Building foundations",
+    },
+    {
+      age: 40,
+      icon: User,
+      title: "Prime Years",
+      description: "Wealth accumulation",
+    },
+    {
+      age: 50,
+      icon: Clock,
+      title: "Mid-Life",
+      description: "Financial maturity",
+    },
+    {
+      age: 60,
+      icon: Crown,
+      title: "Pre-Retirement",
+      description: "Wisdom & security",
+    },
   ];
 
   // Generate persona characteristics for an age
   const generatePersonaCharacteristics = async (age) => {
     if (personaCharacteristics[age]) return; // Already loaded
-    
+
     setLoadingAge(age);
     try {
       const response = await apiService.generatePersona(age, userProfile);
-      setPersonaCharacteristics(prev => ({
+      setPersonaCharacteristics((prev) => ({
         ...prev,
-        [age]: response.persona
+        [age]: response.persona,
       }));
     } catch (error) {
       console.error(`Failed to generate persona for age ${age}:`, error);
@@ -59,10 +84,10 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
   };
 
   const getAgeColor = (age) => {
-    if (age <= 30) return '#10B981'; // Green
-    if (age <= 40) return '#3B82F6'; // Blue
-    if (age <= 50) return '#8B5CF6'; // Purple
-    return '#F59E0B'; // Amber
+    if (age <= 30) return "#10B981"; // Green
+    if (age <= 40) return "#3B82F6"; // Blue
+    if (age <= 50) return "#8B5CF6"; // Purple
+    return "#F59E0B"; // Amber
   };
 
   const renderPersonaCard = ({ age, icon: Icon, title, description }) => {
@@ -72,9 +97,11 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
     const isAvailable = age > currentAge;
 
     return (
-      <div 
+      <div
         key={age}
-        className={`persona-card ${isSelected ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}`}
+        className={`persona-card ${isSelected ? "selected" : ""} ${
+          !isAvailable ? "disabled" : ""
+        }`}
         onClick={() => isAvailable && handleAgeSelect(age)}
         style={{ borderColor: isSelected ? getAgeColor(age) : undefined }}
       >
@@ -106,7 +133,9 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
           <div className="persona-details">
             <div className="persona-stat">
               <span className="stat-label">Net Worth</span>
-              <span className="stat-value">{characteristics.netWorthRange}</span>
+              <span className="stat-value">
+                {characteristics.netWorthRange}
+              </span>
             </div>
             <div className="persona-focus">
               <strong>Focus:</strong> {characteristics.financialFocus}
@@ -127,7 +156,9 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
     <div className="persona-selector">
       <div className="selector-header">
         <h3>Choose Your Future Self</h3>
-        <p>Select an age to start a conversation with that version of yourself</p>
+        <p>
+          Select an age to start a conversation with that version of yourself
+        </p>
       </div>
 
       {/* Predefined Age Cards */}
@@ -146,8 +177,14 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
             value={selectedAge}
             onChange={(e) => handleAgeSelect(parseInt(e.target.value))}
             className="age-slider"
-            style={{ 
-              background: `linear-gradient(to right, ${getAgeColor(selectedAge)} 0%, ${getAgeColor(selectedAge)} ${((selectedAge - currentAge - 1) / (79 - currentAge)) * 100}%, #e5e7eb ${((selectedAge - currentAge - 1) / (79 - currentAge)) * 100}%, #e5e7eb 100%)`
+            style={{
+              background: `linear-gradient(to right, ${getAgeColor(
+                selectedAge
+              )} 0%, ${getAgeColor(selectedAge)} ${
+                ((selectedAge - currentAge - 1) / (79 - currentAge)) * 100
+              }%, #e5e7eb ${
+                ((selectedAge - currentAge - 1) / (79 - currentAge)) * 100
+              }%, #e5e7eb 100%)`,
             }}
           />
           <div className="age-display">
@@ -164,17 +201,21 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
           <div className="persona-achievements">
             <h5>Major Achievements:</h5>
             <ul>
-              {personaCharacteristics[selectedAge].majorAchievements?.map((achievement, index) => (
-                <li key={index}>{achievement}</li>
-              ))}
+              {personaCharacteristics[selectedAge].majorAchievements?.map(
+                (achievement, index) => (
+                  <li key={index}>{achievement}</li>
+                )
+              )}
             </ul>
           </div>
           <div className="persona-lessons">
             <h5>Key Lessons Learned:</h5>
             <ul>
-              {personaCharacteristics[selectedAge].keyLessons?.map((lesson, index) => (
-                <li key={index}>{lesson}</li>
-              ))}
+              {personaCharacteristics[selectedAge].keyLessons?.map(
+                (lesson, index) => (
+                  <li key={index}>{lesson}</li>
+                )
+              )}
             </ul>
           </div>
         </div>
@@ -183,30 +224,34 @@ const PersonaSelector = ({ currentAge, selectedAge, onAgeSelect, userProfile }) 
       {/* Age Timeline Visualization */}
       <div className="age-timeline">
         <div className="timeline-track">
-          <div 
+          <div
             className="timeline-progress"
-            style={{ 
-              width: `${((selectedAge - currentAge) / (80 - currentAge)) * 100}%`,
-              backgroundColor: getAgeColor(selectedAge)
+            style={{
+              width: `${
+                ((selectedAge - currentAge) / (80 - currentAge)) * 100
+              }%`,
+              backgroundColor: getAgeColor(selectedAge),
             }}
           ></div>
-          
-          <div 
-            className="timeline-marker current"
-            style={{ left: '0%' }}
-          >
+
+          <div className="timeline-marker current" style={{ left: "0%" }}>
             <div className="marker-dot"></div>
             <span className="marker-label">Now ({currentAge})</span>
           </div>
-          
-          <div 
+
+          <div
             className="timeline-marker selected"
-            style={{ 
-              left: `${((selectedAge - currentAge) / (80 - currentAge)) * 100}%`,
-              color: getAgeColor(selectedAge)
+            style={{
+              left: `${
+                ((selectedAge - currentAge) / (80 - currentAge)) * 100
+              }%`,
+              color: getAgeColor(selectedAge),
             }}
           >
-            <div className="marker-dot" style={{ backgroundColor: getAgeColor(selectedAge) }}></div>
+            <div
+              className="marker-dot"
+              style={{ backgroundColor: getAgeColor(selectedAge) }}
+            ></div>
             <span className="marker-label">Future Me ({selectedAge})</span>
           </div>
         </div>
