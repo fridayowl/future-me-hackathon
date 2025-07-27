@@ -414,7 +414,7 @@ What would you like to dive deeper into?`;
         {/* Image Card (left-most) */}
         <div style={styles.imageCard}>
           <img
-            src="https://via.placeholder.com/180x400?text=User+Visual" // Larger placeholder for the new card
+            src={profileImage}
             alt="User Visual"
             style={styles.fullHeightImage}
           />
@@ -503,13 +503,7 @@ What would you like to dive deeper into?`;
               )}
             </div>
 
-            {profileImage && (
-              <img
-                src={profileImage}
-                alt="Profile"
-                style={styles.profileImage}
-              />
-            )}
+          
           </div>
 
           <Handle type="source" position="bottom" />
@@ -683,6 +677,7 @@ const styles = {
   },
   // New Image Card style
   imageCard: {
+    height:'250px',
     background: '#ffffff',
     border: '1px solid #e5e7eb',
     borderRadius: '16px',
@@ -861,7 +856,7 @@ const styles = {
   chatHeader: {
     padding: '16px',
     borderBottom: '1px solid #e5e7eb',
-    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    background: '#10b981',
     borderRadius: '16px 16px 0 0',
     display: 'flex',
     justifyContent: 'space-between',
@@ -1062,7 +1057,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1106,7 +1101,7 @@ const styles = {
   inputLabel: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#374151',
+    
     marginBottom: '4px',
   },
   input: {
