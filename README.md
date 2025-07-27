@@ -26,7 +26,7 @@ Future Me is a web application built for the Google Cloud Agentic AI Day Hackath
 1. **Setup connection to the MCP Server**
 ```sh
     git clone https://github.com/epiFi/fi-mcp-dev.git
-    git clone https://github.com/dockerFile.git
+    git clone https://github.com/abhitrueprogrammer/fi-mcp-dev-dockerFile.git
     cp dockerFile/Dockerfile fi-mcp-dev
     docker compose up -d
 ```
