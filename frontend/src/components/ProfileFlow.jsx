@@ -490,7 +490,7 @@ const onInit = (instance) => {
             includeHiddenNodes: true,
           }}
           defaultEdgeOptions={{
-            style: { strokeWidth: 2, stroke: '#6366f1' },
+            style: { strokeWidth: 2, stroke: '#10b981' },
             markerEnd: { type: MarkerType.Arrow }
           }}
           style={{

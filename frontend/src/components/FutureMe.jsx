@@ -374,7 +374,7 @@ What specific aspect of this future would you like to explore? I can discuss the
             {/* Content */}
             <div style={styles.content}>
               <div style={styles.headerRow}>
-                <h2 style={styles.header}>🔮 Future Me at {estimatedAgeRange}</h2>
+                <h2 style={styles.header}> Future Me at {estimatedAgeRange}</h2>
                 <button
                   onClick={() => setShowChat(!showChat)}
                   style={{...styles.chatToggle, backgroundColor: showChat ? '#10b981' : '#8b5cf6'}}
@@ -681,7 +681,7 @@ const styles = {
     fontSize: '1.1rem',
     marginTop: 16,
     marginBottom: 6,
-    color: '#1d4ed8',
+    color: '#001a1e',
   },
   info: {
     fontSize: '0.95rem',
@@ -752,7 +752,7 @@ const styles = {
   },
   imageCardImage: {
     width: '120px',
-    height: '120px',
+    height: '170px',
     borderRadius: '10%', 
     objectFit: 'cover',
     marginBottom: '15px',
@@ -790,7 +790,7 @@ const styles = {
   chatHeader: {
     padding: '16px',
     borderBottom: '1px solid #e5e7eb',
-    background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+    background: '#10b981',
     borderRadius: '16px 16px 0 0',
     display: 'flex',
     justifyContent: 'space-between',

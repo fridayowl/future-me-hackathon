@@ -856,7 +856,7 @@ const styles = {
   chatHeader: {
     padding: '16px',
     borderBottom: '1px solid #e5e7eb',
-    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    background: '#10b981',
     borderRadius: '16px 16px 0 0',
     display: 'flex',
     justifyContent: 'space-between',
