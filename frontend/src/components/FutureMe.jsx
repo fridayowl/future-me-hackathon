@@ -742,7 +742,7 @@ const styles = {
   imageCard: {
     backgroundColor: 'white',
     border: '1px solid #e5e7eb',
-    borderRadius: '16px',
+    borderRadius: '1px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
     display: 'flex',
     flexDirection: 'column',
@@ -753,7 +753,7 @@ const styles = {
   imageCardImage: {
     width: '120px',
     height: '120px',
-    borderRadius: '50%', 
+    borderRadius: '10%', 
     objectFit: 'cover',
     marginBottom: '15px',
     border: '4px solid #8b5cf6', 

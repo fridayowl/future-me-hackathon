@@ -9,7 +9,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-
+import { Toaster } from 'react-hot-toast';
 const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
   const [sessionId, setSessionId] = useState(null);
@@ -290,7 +290,9 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
           </div>
         </div>
       </div>
+      <Toaster /> 
     </div>
+    
   );
 };
 

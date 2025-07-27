@@ -9,7 +9,10 @@ import {
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-
+import futureImage0 from '../assets/image1.png'; 
+import futureImage1 from '../assets/image2.png'; // Make sure this path is correct
+import futureImage2 from '../assets/image3.png'; // Make sure this path is correct
+import futureImage3 from '../assets/image4.png'; // Make sure this path is correct
 import PresentMe from './PresentMe';
 import FutureMe from './FutureMe';
 
@@ -28,7 +31,14 @@ const ProfileFlow = ({ profileData, onStartConversation }) => {
   const [appliedActions, setAppliedActions] = useState([]);
 const reactFlowInstanceRef = useRef(null);
 
-
+ const futureImages = [
+    futureImage1,
+    futureImage2,
+    futureImage3,
+    futureImage0,
+    
+    // Add more if you have more than 3 future stages
+  ];
 const onInit = (instance) => {
   reactFlowInstanceRef.current = instance;
   instance.setViewport({ x: 0, y: 100, zoom:0.2 }, { duration: 800 });
@@ -321,7 +331,7 @@ const onInit = (instance) => {
             careerTrajectory: profile.basicInfo?.demographics?.careerTrajectory || 'Stable',
             monthlyIncome: profile.basicInfo?.demographics?.monthlyIncome || 50000,
           },
-          profileImage: profile.basicInfo?.demographics?.profileImage || '',
+          profileImage: futureImages[3] || '',
         },
         // Pass the financial action handler to PresentMe
         onFinancialAction: applyFinancialAction,
@@ -355,7 +365,7 @@ const onInit = (instance) => {
             assetOwnershipProjection: stage.assetOwnershipProjection || {},
             creditScore: stage.creditScore || {},
             goals: stage.goals || [],
-            profileImage: stage.profileImage || '',
+             profileImage: futureImages[index] || stage.profileImage,
             incomeProjection: stage.incomeProjection || {},
             // Add change indicators if they exist
             changes: stage.changes || null,
