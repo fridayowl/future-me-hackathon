@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, Shield, Database, AlertCircle, CheckCircle } from 'lucide-react';
-
+/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
+import {
+  Wifi,
+  WifiOff,
+  Shield,
+  Database,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import { Toaster } from 'react-hot-toast';
 const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
   const [sessionId, setSessionId] = useState(null);
   const [error, setError] = useState(null);
   const [mcpServerHealth, setMcpServerHealth] = useState(null);
   const [userCredentials, setUserCredentials] = useState({
-    userId: '9999999999', // Default for testing
-    authToken: 'demo_token' // Default for testing
+    userId: "9999999999", // Default for testing
+    authToken: "demo_token", // Default for testing
   });
 
   // Check MCP server health on component mount
@@ -19,38 +28,37 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const checkMCPServerHealth = async () => {
     try {
       // Import apiService dynamically to avoid circular imports
-      const { apiService } = await import('../services/api');
+      const { apiService } = await import("../services/api");
       const healthResult = await apiService.checkMCPHealth();
       setMcpServerHealth(healthResult);
     } catch (error) {
-      console.error('Health check error:', error);
+      console.error("Health check error:", error);
       setMcpServerHealth({
         success: false,
-        message: 'Cannot check MCP server status'
+        message: "Cannot check MCP server status",
       });
     }
   };
 
   const connectToMCP = async () => {
     try {
-      setConnectionStatus('connecting');
+      setConnectionStatus("connecting");
       setError(null);
 
       // Import apiService dynamically
-      const { apiService } = await import('../services/api');
-      
+      const { apiService } = await import("../services/api");
+
       const response = await apiService.connectToMCP(
         userCredentials.userId,
         userCredentials.authToken
       );
 
       setSessionId(response.sessionId);
-      setConnectionStatus('connected');
+      setConnectionStatus("connected");
       onConnectionChange?.(true, response.sessionId);
-
     } catch (err) {
       setError(`Connection failed: ${err.message}`);
-      setConnectionStatus('error');
+      setConnectionStatus("error");
       onConnectionChange?.(false, null);
     }
   };
@@ -58,17 +66,16 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const disconnectFromMCP = async () => {
     try {
       if (sessionId) {
-        const { apiService } = await import('../services/api');
+        const { apiService } = await import("../services/api");
         await apiService.disconnectFromMCP(sessionId);
       }
 
       setSessionId(null);
-      setConnectionStatus('disconnected');
+      setConnectionStatus("disconnected");
       setError(null);
       onConnectionChange?.(false, null);
-
     } catch (err) {
-      console.error('Disconnect error:', err);
+      console.error("Disconnect error:", err);
       setError(`Disconnect failed: ${err.message}`);
     }
   };
@@ -76,39 +83,55 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
   const analyzeFinancialData = async () => {
     try {
       setError(null);
-
-      const { apiService } = await import('../services/api');
-      const response = await apiService.analyzeMCPData(sessionId);
-
-      onAnalyzeProfile(response.profile);
-
+      await toast.promise(
+        (async () => {
+          const { apiService } = await import("../services/api");
+          const response = await apiService.analyzeMCPData(sessionId);
+          onAnalyzeProfile(response.profile);
+          // Optionally return something if needed
+          return response;
+        })(),
+        {
+          pending: "Analyzing...",
+          success: "Analysis complete!",
+          error: "Analysis failed",
+        }
+      );
     } catch (err) {
       setError(`Analysis failed: ${err.message}`);
     }
   };
 
   const handleInputChange = (field, value) => {
-    setUserCredentials(prev => ({
+    setUserCredentials((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const getStatusColor = () => {
     switch (connectionStatus) {
-      case 'connected': return 'text-green-600';
-      case 'connecting': return 'text-yellow-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-600';
+      case "connected":
+        return "text-green-600";
+      case "connecting":
+        return "text-yellow-600";
+      case "error":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
     }
   };
 
   const getStatusIcon = () => {
     switch (connectionStatus) {
-      case 'connected': return <Wifi className={getStatusColor()} size={24} />;
-      case 'connecting': return <div className="loading-spinner small" />;
-      case 'error': return <WifiOff className={getStatusColor()} size={24} />;
-      default: return <WifiOff className={getStatusColor()} size={24} />;
+      case "connected":
+        return <Wifi className={getStatusColor()} size={24} />;
+      case "connecting":
+        return <div className="loading-spinner small" />;
+      case "error":
+        return <WifiOff className={getStatusColor()} size={24} />;
+      default:
+        return <WifiOff className={getStatusColor()} size={24} />;
     }
   };
 
@@ -116,21 +139,25 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
     <div className="mcp-connection">
       <div className="connection-header">
         <h2>Connect to Fi MCP</h2>
-        <p>Securely connect to your Fi Money account for real-time financial data</p>
+        <p>
+          Securely connect to your Fi Money account for real-time financial data
+        </p>
       </div>
 
       {/* MCP Server Health Status */}
       {mcpServerHealth && (
-        <div className={`health-status ${mcpServerHealth.success ? 'success' : 'error'}`}>
+        <div
+          className={`health-status ${
+            mcpServerHealth.success ? "success" : "error"
+          }`}
+        >
           {mcpServerHealth.success ? (
             <CheckCircle size={20} className="text-green-600" />
           ) : (
             <AlertCircle size={20} className="text-red-600" />
           )}
-          <span>
-            Fi MCP Server (localhost:8080): {mcpServerHealth.message}
-          </span>
-          <button 
+          <span>Fi MCP Server (localhost:8080): {mcpServerHealth.message}</span>
+          <button
             onClick={checkMCPServerHealth}
             className="refresh-button"
             disabled={isLoading}
@@ -140,7 +167,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
         </div>
       )}
 
-      <div className="connection-status">
+      {/* <div className="connection-status">
         <div className="status-indicator">
           {getStatusIcon()}
           <span className={`status-text ${getStatusColor()}`}>
@@ -150,7 +177,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
             {connectionStatus === 'error' && 'Connection Error'}
           </span>
         </div>
-      </div>
+      </div> */}
 
       {error && (
         <div className="error-banner">
@@ -160,7 +187,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
         </div>
       )}
 
-      {connectionStatus === 'disconnected' && (
+      {connectionStatus === "disconnected" && (
         <div className="connection-form">
           <div className="credential-inputs">
             <div className="input-group">
@@ -169,7 +196,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
                 id="userId"
                 type="text"
                 value={userCredentials.userId}
-                onChange={(e) => handleInputChange('userId', e.target.value)}
+                onChange={(e) => handleInputChange("userId", e.target.value)}
                 placeholder="Enter your Fi Money User ID"
                 disabled={isLoading}
               />
@@ -181,7 +208,7 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
                 id="authToken"
                 type="password"
                 value={userCredentials.authToken}
-                onChange={(e) => handleInputChange('authToken', e.target.value)}
+                onChange={(e) => handleInputChange("authToken", e.target.value)}
                 placeholder="Enter your authentication token"
                 disabled={isLoading}
               />
@@ -191,20 +218,30 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
           <button
             className="connect-button"
             onClick={connectToMCP}
-            disabled={!userCredentials.userId || !userCredentials.authToken || isLoading || !mcpServerHealth?.success}
+            disabled={
+              !userCredentials.userId ||
+              !userCredentials.authToken ||
+              isLoading ||
+              !mcpServerHealth?.success
+            }
           >
             <Shield size={20} />
-            {mcpServerHealth?.success ? 'Connect Securely' : 'MCP Server Unavailable'}
+            {mcpServerHealth?.success
+              ? "Connect Securely"
+              : "MCP Server Unavailable"}
           </button>
 
           <div className="security-notice">
             <Shield size={16} />
-            <p>Your credentials are encrypted and never stored. All data remains under your control.</p>
+            <p>
+              Your credentials are encrypted and never stored. All data remains
+              under your control.
+            </p>
           </div>
         </div>
       )}
 
-      {connectionStatus === 'connected' && (
+      {connectionStatus === "connected" && (
         <div className="connected-actions">
           <div className="session-info">
             <Database size={20} />
@@ -253,7 +290,9 @@ const MCPConnection = ({ onAnalyzeProfile, isLoading, onConnectionChange }) => {
           </div>
         </div>
       </div>
+      <Toaster /> 
     </div>
+    
   );
 };
 
